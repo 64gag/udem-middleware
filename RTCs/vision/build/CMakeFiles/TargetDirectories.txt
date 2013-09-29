@@ -1,0 +1,4 @@
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/vision/build/src/CMakeFiles/Vision.dir
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/vision/build/src/CMakeFiles/VisionComp.dir
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/vision/build/doc/CMakeFiles/doxygen_doc.dir
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/vision/build/CMakeFiles/uninstall.dir

@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/KinematicsComp.dir/KinematicsComp.cpp.o CMakeFiles/KinematicsComp.dir/Kinematics.cpp.o  -o KinematicsComp -rdynamic -luuid -ldl -lpthread -lomniORB4 -lomnithread -lomniDynamic4 -lRTC -lcoil 

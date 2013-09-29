@@ -1,0 +1,4 @@
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/kinematics/build/src/CMakeFiles/Kinematics.dir
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/kinematics/build/src/CMakeFiles/KinematicsComp.dir
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/kinematics/build/doc/CMakeFiles/doxygen_doc.dir
+/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/kinematics/build/CMakeFiles/uninstall.dir

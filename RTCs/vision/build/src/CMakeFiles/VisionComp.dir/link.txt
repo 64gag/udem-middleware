@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/VisionComp.dir/VisionComp.cpp.o CMakeFiles/VisionComp.dir/Vision.cpp.o  -o VisionComp -rdynamic -luuid -ldl -lpthread -lomniORB4 -lomnithread -lomniDynamic4 -lRTC -lcoil 
