@@ -9,3 +9,9 @@
 *Simulation is done using V-Rep (http://www.coppeliarobotics.com/) and/or Gazebo (http://gazebosim.org/)
 
 *We use <free> third party libraries across our project. All of them will be listed when the development slows down.
+
+*Libraries currently used include:
+	-OpenCV
+	-jsoncpp
+	-libwebsockets
+	
