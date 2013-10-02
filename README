@@ -1,1 +1,11 @@
-This is a professional practice project of four UDEM (www.udem.edu.mx) students.
+*This is a professional practice project of four UDEM (http://www.udem.edu.mx) students.
+
+*We are working for the Fukushima Lab (http://www-robot.mes.titech.ac.jp/home_e.html).
+
+*Our target robot is HELIOS-IX (http://www-robot.mes.titech.ac.jp/robot/wheeled/helios9/helios9.html).
+
+*We are using two middleware platforms: RTMiddleware (http://openrtm.org/) and ROS (http://wiki.ros.org/).
+
+*Simulation is done using V-Rep (http://www.coppeliarobotics.com/) and/or Gazebo (http://gazebosim.org/)
+
+*We use <free> third party libraries across our project. All of them will be listed when the development slows down.
