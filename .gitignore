@@ -1,0 +1,6 @@
+.metadata/
+hardware/build/
+kinematics/build/
+master/build/
+simulation/build/
+vision/build/
