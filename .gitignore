@@ -1,6 +1,6 @@
 .metadata/
-hardware/build/
-kinematics/build/
-master/build/
-simulation/build/
-vision/build/
+RTCs/hardware/build/
+RTCs/kinematics/build/
+RTCs/master/build/
+RTCs/simulation/build/
+RTCs/vision/build/
