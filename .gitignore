@@ -4,3 +4,4 @@ RTCs/kinematics/build/
 RTCs/master/build/
 RTCs/simulation/build/
 RTCs/vision/build/
+*[0-9]
