@@ -19,7 +19,7 @@ static const char* kinematics_spec[] =
     "version",           "0.0.1",
     "vendor",            "UDEM",
     "category",          "Mechanical",
-    "activity_type",     "EVENTDRIVEN",
+    "activity_type",     "PERIODIC",
     "kind",              "DataFlowComponent",
     "max_instance",      "1",
     "language",          "C++",

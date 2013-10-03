@@ -8,8 +8,8 @@
 
 #   rtc-template -bcxx --module-name=Kinematics 
 #   --module-desc='Calculates links positions needed to reach a target' --module-version=0.0.1 --module-vendor=UDEM 
-#   --module-category=Mechanical --module-comp-type=STATIC 
-#   --module-act-type=EVENTDRIVEN --module-max-inst=1 
+#   --module-category=Mechanical --module-comp-type=COMMUTATIVE 
+#   --module-act-type=PERIODIC --module-max-inst=1 
 #   --inport=Target:RTC::TimedString --outport=Result:RTC::TimedString --outport=Status:RTC::TimedULong 
 
 
@@ -23,8 +23,8 @@ Version:     0.0.1
 Vendor:      UDEM
 Category:    Mechanical
 Kind:        DataFlowComponent
-Comp. Type:  STATIC
-Act. Type:   EVENTDRIVEN
+Comp. Type:  COMMUTATIVE
+Act. Type:   PERIODIC
 MAX Inst.:   1
 Lang:        C++
 Lang Type:   

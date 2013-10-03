@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:UDEM:Administrative:Master:0.0.1" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="master" rtc:updateDate="2013-09-26T13:51:53-05:00" rtc:creationDate="2013-09-26T13:51:53-05:00" rtc:version="0.0.1" rtc:vendor="UDEM" rtc:maxInstances="1" rtc:executionType="ExtTrigExecutionContext" rtc:executionRate="1.0" rtc:description="Mind and commander" rtc:category="Administrative" rtc:componentKind="DataFlowComponent" rtc:activityType="EVENTDRIVEN" rtc:componentType="STATIC" rtc:name="Master">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="master" rtc:updateDate="2013-09-26T13:51:53-05:00" rtc:creationDate="2013-09-26T13:51:53-05:00" rtc:version="0.0.1" rtc:vendor="UDEM" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="500.0" rtc:description="Mind and commander" rtc:category="Administrative" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="STATIC" rtc:name="Master">
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
     </rtc:BasicInfo>
     <rtc:Actions>

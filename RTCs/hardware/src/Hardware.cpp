@@ -8,7 +8,6 @@
  */
 #include <iostream>
 #include <json/json.h>
-
 #include "Hardware.h"
 
 // Module specification
@@ -21,9 +20,9 @@ static const char* hardware_spec[] =
     "version",           "0.0.1",
     "vendor",            "UDEM",
     "category",          "Interfac",
-    "activity_type",     "EVENTDRIVEN",
+    "activity_type",     "PERIODIC",
     "kind",              "DataFlowComponent",
-    "max_instance",      "1",
+    "max_instance",      "5",
     "language",          "C++",
     "lang_type",         "compile",
     ""
@@ -87,12 +86,25 @@ RTC::ReturnCode_t Hardware::onFinalize()
   return RTC::RTC_OK;
 }
 
-/*
+
 RTC::ReturnCode_t Hardware::onStartup(RTC::UniqueId ec_id)
 {
+	Json::Value toRobot;
+
+	toRobot["ns"] = "org.jwebsocket.plugins.system";
+	toRobot["type"] = "broadcast";
+	toRobot["data"] = "<WRIST>([ANGLE.1:DEGREES][ANGLE.2:DEGREES][ANGLE.3:DEGREES][GRIPPER:OPENCLOSED])";
+	toRobot["responseRequested"] = true;
+	toRobot["utid"] = 1;
+
+	// Output to see the result
+	std::cout<<"creating nested Json::Value Example pretty print: "
+	<<std::endl<<toRobot.toStyledString()
+	<<std::endl;
+
   return RTC::RTC_OK;
 }
-*/
+
 
 /*
 RTC::ReturnCode_t Hardware::onShutdown(RTC::UniqueId ec_id)
@@ -110,24 +122,34 @@ RTC::ReturnCode_t Hardware::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Hardware::onDeactivated(RTC::UniqueId ec_id)
 {
+
+
+std::cout << "Ran onDeactivated" << std::endl;
   return RTC::RTC_OK;
 }
 
 
 RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 {
-// Creation
-Json::Value minimizer;
-Json::Value minParameters;
-minParameters["MinimumRMS"] = 0.2;
-minParameters["sgbUpdated"] = true;
-minimizer["Minimizer"]["parameters"] = minParameters;
-minimizer["algorithm"] = "TruncatedNewton";
- 
-// Output to see the result
-std::cout<<"creating nested Json::Value Example pretty print: "
-<<std::endl<<minimizer.toStyledString()
-<<std::endl;
+
+
+
+// Creation//
+
+/*
+
+Tipo: String (concatenado)
+"{\"ns\":\"org.jwebsocket.plugins.system\",\"type\":\"broadcast\",\"data\":\"MESSAGE\",\"responseRequested\":true,\"utid\":VALUE}"
+
+MESSAGE = "<WRIST>([ANGLE.1:DEGREES][ANGLE.2:DEGREES][ANGLE.3:DEGREES][GRIPPER:OPENCLOSED])"
+VALUE = Número de serie del mensaje (incremental).
+DEGREES = El valor del ángulo en grados (rango de -45 a 45).
+OPENCLOSED = 0 es cerrado, 1 es abierto
+*/
+
+
+
+  coil::usleep(1000);
   return RTC::RTC_OK;
 }
 

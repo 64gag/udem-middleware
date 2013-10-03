@@ -9,7 +9,7 @@
 #   rtc-template -bcxx --module-name=Master 
 #   --module-desc='Mind and commander' --module-version=0.0.1 --module-vendor=UDEM 
 #   --module-category=Administrative --module-comp-type=STATIC 
-#   --module-act-type=EVENTDRIVEN --module-max-inst=1 
+#   --module-act-type=PERIODIC --module-max-inst=1 
 #   --inport=Status_vision:RTC::TimedULong --inport=Result_vision:RTC::TimedString --inport=Status_kinematics:RTC::TimedULong --inport=Result_kinematics:RTC::TimedString --inport=Status_hardware:RTC::TimedULong --outport=Option_vision:RTC::TimedString --outport=Target_kinematics:RTC::TimedString --outport=Position_hardware:RTC::TimedString 
 
 
@@ -24,7 +24,7 @@ Vendor:      UDEM
 Category:    Administrative
 Kind:        DataFlowComponent
 Comp. Type:  STATIC
-Act. Type:   EVENTDRIVEN
+Act. Type:   PERIODIC
 MAX Inst.:   1
 Lang:        C++
 Lang Type:   

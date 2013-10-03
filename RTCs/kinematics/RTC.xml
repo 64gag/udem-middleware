@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <rtc:RtcProfile rtc:version="0.2" rtc:id="RTC:UDEM:Mechanical:Kinematics:0.0.1" xmlns:rtcExt="http://www.openrtp.org/namespaces/rtc_ext" xmlns:rtcDoc="http://www.openrtp.org/namespaces/rtc_doc" xmlns:rtc="http://www.openrtp.org/namespaces/rtc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="kinematics" rtc:updateDate="2013-09-26T13:42:13-05:00" rtc:creationDate="2013-09-26T13:42:13-05:00" rtc:version="0.0.1" rtc:vendor="UDEM" rtc:maxInstances="1" rtc:executionType="ExtTrigExecutionContext" rtc:executionRate="1000.0" rtc:description="Calculates links positions needed to reach a target" rtc:category="Mechanical" rtc:componentKind="DataFlowComponent" rtc:activityType="EVENTDRIVEN" rtc:componentType="STATIC" rtc:name="Kinematics">
+    <rtc:BasicInfo xsi:type="rtcExt:basic_info_ext" rtcExt:saveProject="kinematics" rtc:updateDate="2013-09-26T13:42:13-05:00" rtc:creationDate="2013-09-26T13:42:13-05:00" rtc:version="0.0.1" rtc:vendor="UDEM" rtc:maxInstances="1" rtc:executionType="PeriodicExecutionContext" rtc:executionRate="200.0" rtc:description="Calculates links positions needed to reach a target" rtc:category="Mechanical" rtc:componentKind="DataFlowComponent" rtc:activityType="PERIODIC" rtc:componentType="COMMUTATIVE" rtc:name="Kinematics">
         <rtcExt:VersionUpLogs></rtcExt:VersionUpLogs>
     </rtc:BasicInfo>
     <rtc:Actions>
