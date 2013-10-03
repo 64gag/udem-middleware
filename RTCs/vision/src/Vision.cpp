@@ -8,6 +8,35 @@
  */
 
 #include "Vision.h"
+#include <stdio.h>
+#include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+
+#define FLAG_DRAW 1
+
+enum {
+        TARGET_FAST=0,
+        TARGET_SLOW,
+        TARGET_LEFT,
+        TARGET_RIGHT,
+        TARGET_STAIRS,
+        TARGET_ELEVATOR,
+        TARGET_STOP,
+	TARGET_COUNT /* Leave this alone! */
+};
+
+using namespace cv;
+
+std::string path = "/home/paguiar/Dropbox/UDEM/PPD - Middleware/Vision/src/";
+std::string file[TARGET_COUNT] = { "fast.jpg", "slow.jpg", "left.jpg", "right.jpg", "stairs.jpg", "elevator.jpg", "stop.jpg" };
+
+unsigned int gFlags = 0;
 
 // Module specification
 // <rtc-template block="module_spec">
@@ -112,6 +141,115 @@ RTC::ReturnCode_t Vision::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 {
+gFlags |= FLAG_DRAW;
+
+Mat *t_images = new Mat[TARGET_COUNT];
+Mat *t_descriptors = new Mat[TARGET_COUNT];
+std::vector<KeyPoint> * t_kp = new std::vector<KeyPoint>[TARGET_COUNT];
+std::vector<Point2f> * t_ob_corners = new std::vector<Point2f>[TARGET_COUNT];
+
+int minHessian = 300;
+SurfFeatureDetector detector( minHessian );
+SurfDescriptorExtractor extractor;
+FlannBasedMatcher matcher;
+
+for (int i=0; i<TARGET_COUNT; i++){
+	t_images[i] = imread( path+file[i], CV_LOAD_IMAGE_GRAYSCALE );
+	detector.detect( t_images[i], t_kp[i]);
+	extractor.compute( t_images[i], t_kp[i], t_descriptors[i] );
+	t_ob_corners[i].push_back(cvPoint(0,0));
+	t_ob_corners[i].push_back(cvPoint( t_images[i].cols, 0 ));
+	t_ob_corners[i].push_back(cvPoint( t_images[i].cols, t_images[i].rows ));
+	t_ob_corners[i].push_back(cvPoint( 0, t_images[i].rows ));
+}
+
+    VideoCapture cap(0);
+
+    char key = 'a';
+    int framecount = 0;
+    while (key != 'q')
+    {
+        Mat frame;
+        cap >> frame;
+
+        if (framecount < 9)
+        {
+            framecount++;
+            continue;
+        }
+
+	std::vector<vector<DMatch > > *t_matches = new std::vector<vector<DMatch > >[TARGET_COUNT];
+	std::vector<DMatch > *t_good_matches = new std::vector<DMatch >[TARGET_COUNT];
+	std::vector<Point2f> *t_ob = new std::vector<Point2f>[TARGET_COUNT];
+	std::vector<Point2f> *t_scene = new std::vector<Point2f>[TARGET_COUNT];
+	std::vector<Point2f> *t_scene_corners = new std::vector<Point2f>[TARGET_COUNT];
+
+        Mat des_image, img_matches;
+        std::vector<KeyPoint> kp_image;
+
+        Mat H;
+        Mat image;
+
+        cvtColor(frame, image, CV_RGB2GRAY);
+
+        detector.detect( image, kp_image );
+        extractor.compute( image, kp_image, des_image );
+
+	for(int t=0; t<TARGET_COUNT; t++){
+		t_scene_corners[t].resize(4);
+		matcher.knnMatch(t_descriptors[t], des_image, t_matches[t], 2);
+		for(int i = 0; i < min(des_image.rows-1,(int) t_matches[t].size()); i++) //THIS LOOP IS SENSITIVE TO SEGFAULTS
+		{
+		    if((t_matches[t][i][0].distance < 0.6*(t_matches[t][i][1].distance)) && ((int) t_matches[t][i].size()<=2 && (int) t_matches[t][i].size()>0))
+		    {
+		        t_good_matches[t].push_back(t_matches[t][i][0]);
+		    }
+		}
+		//Draw only "good" matches
+		drawMatches( t_images[t], t_kp[t], image, kp_image, t_good_matches[t], img_matches, Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+
+		if (t_good_matches[t].size() >= 4)
+		{
+			std::cout<< file[t]+" found" << std::endl;
+//			m_status.data = t;
+			//m_statusOut.write();
+			if(gFlags & FLAG_DRAW)
+			{
+				for( int i = 0; i < t_good_matches[t].size(); i++ )
+				{
+					t_ob[t].push_back( t_kp[t][ t_good_matches[t][i].queryIdx ].pt );
+					t_scene[t].push_back( kp_image[ t_good_matches[t][i].trainIdx ].pt );
+				}
+
+				H = findHomography( t_ob[t], t_scene[t], CV_RANSAC );
+				perspectiveTransform( t_ob_corners[t], t_scene_corners[t], H);
+
+				line( image, t_scene_corners[t][0], t_scene_corners[t][1], Scalar(0, 255, 0), 4 );
+				line( image, t_scene_corners[t][1], t_scene_corners[t][2], Scalar( 0, 255, 0), 4 );
+				line( image, t_scene_corners[t][2], t_scene_corners[t][3], Scalar( 0, 255, 0), 4 );
+				line( image, t_scene_corners[t][3], t_scene_corners[t][0], Scalar( 0, 255, 0), 4 );
+			}
+		}
+	}
+
+        //Show detected matches
+	if(gFlags & FLAG_DRAW){
+	        imshow( "Result", image );
+	}
+
+        key = waitKey(1);
+	delete[] t_matches;
+	delete[] t_good_matches;
+	delete[] t_ob;
+	delete[] t_scene;
+	delete[] t_scene_corners;
+    }
+
+ delete[] t_images;
+ delete[] t_descriptors;
+ delete[] t_kp;
+ delete[] t_ob_corners;
+
   return RTC::RTC_OK;
 }
 

@@ -46,6 +46,7 @@ target_link_libraries(${PROJECT_NAME} ${OPENRTM_LIBRARIES})
 add_executable(${PROJECT_NAME}Comp ${standalone_srcs}
   ${comp_srcs} ${comp_headers} ${ALL_IDL_SRCS})
 target_link_libraries(${PROJECT_NAME}Comp ${OPENRTM_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}Comp json) #This is jsoncpp! I installed it as "json", you may have to change this
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}Comp
     EXPORT ${PROJECT_NAME}

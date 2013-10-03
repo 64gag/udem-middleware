@@ -6,6 +6,8 @@
  *
  * $Id$
  */
+#include <iostream>
+#include <json/json.h>
 
 #include "Hardware.h"
 
@@ -114,6 +116,18 @@ RTC::ReturnCode_t Hardware::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 {
+// Creation
+Json::Value minimizer;
+Json::Value minParameters;
+minParameters["MinimumRMS"] = 0.2;
+minParameters["sgbUpdated"] = true;
+minimizer["Minimizer"]["parameters"] = minParameters;
+minimizer["algorithm"] = "TruncatedNewton";
+ 
+// Output to see the result
+std::cout<<"creating nested Json::Value Example pretty print: "
+<<std::endl<<minimizer.toStyledString()
+<<std::endl;
   return RTC::RTC_OK;
 }
 

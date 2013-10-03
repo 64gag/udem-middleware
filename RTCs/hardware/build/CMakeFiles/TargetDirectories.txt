@@ -1,4 +1,0 @@
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/hardware/build/src/CMakeFiles/Hardware.dir
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/hardware/build/src/CMakeFiles/HardwareComp.dir
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/hardware/build/doc/CMakeFiles/doxygen_doc.dir
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/hardware/build/CMakeFiles/uninstall.dir

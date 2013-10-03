@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/MasterComp.dir/MasterComp.cpp.o CMakeFiles/MasterComp.dir/Master.cpp.o  -o MasterComp -rdynamic -luuid -ldl -lpthread -lomniORB4 -lomnithread -lomniDynamic4 -lRTC -lcoil 

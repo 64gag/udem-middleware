@@ -1,4 +1,0 @@
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/simulation/build/src/CMakeFiles/Simulation.dir
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/simulation/build/src/CMakeFiles/SimulationComp.dir
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/simulation/build/doc/CMakeFiles/doxygen_doc.dir
-/home/paguiar/Dropbox/UDEM/PPD - Middleware/eclipse/simulation/build/CMakeFiles/uninstall.dir

@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC    -shared -Wl,-soname,Master.so -o Master.so CMakeFiles/Master.dir/Master.cpp.o -luuid -ldl -lpthread -lomniORB4 -lomnithread -lomniDynamic4 -lRTC -lcoil 
