@@ -10,7 +10,7 @@
 #   --module-desc='Simulation wrapper' --module-version=0.0.1 --module-vendor=VenderName 
 #   --module-category=Category --module-comp-type=STATIC 
 #   --module-act-type=PERIODIC --module-max-inst=1 
-#   --inport=Data:RTC::TimedString --outport=Feedback:RTC::TimedString 
+#   --inport=Data:RTC::TimedString --outport=Feedback:RTC::TimedString --outport=Camera:RTC::CameraImage 
 
 
 ======================================================================
@@ -96,6 +96,24 @@ Lang Type:
 	Description: 
 	PortType: 
 	DataType:    RTC::TimedString
+	MaxOut: 
+	[Data Elements]
+		Name:
+		Type:            
+		Number:          
+		Semantics:       
+		Unit:            
+		Frequency:       
+		Operation Cycle: 
+		RangeLow:
+		RangeHigh:
+		DefaultValue:
+
+	Name:        Camera
+	PortNumber:  1
+	Description: 
+	PortType: 
+	DataType:    RTC::CameraImage
 	MaxOut: 
 	[Data Elements]
 		Name:

@@ -242,6 +242,10 @@ class Simulation
   /*!
    */
   OutPort<RTC::TimedString> m_p_feedbackOut;
+  RTC::CameraImage m_p_camera;
+  /*!
+   */
+  OutPort<RTC::CameraImage> m_p_cameraOut;
   
   // </rtc-template>
 

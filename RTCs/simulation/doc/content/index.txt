@@ -118,6 +118,7 @@ Name            Type        Data type                      Purpose
 =============== =========== ============================== =======
 Data            InPort      RTC::TimedString               
 Feedback        OutPort     RTC::TimedString               
+Camera          OutPort     RTC::CameraImage               
 =============== =========== ============================== =======
 
 Examples

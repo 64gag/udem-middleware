@@ -110,6 +110,7 @@ Simulationは ``SimulationComp`` を実行（ ``${prefix}/components/bin`` に
 =============== =========== ============================== ====
 Data            InPort      RTC::TimedString               
 Feedback        OutPort     RTC::TimedString               
+Camera          OutPort     RTC::CameraImage               
 =============== =========== ============================== ====
 
 例

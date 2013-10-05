@@ -36,7 +36,8 @@ Simulation::Simulation(RTC::Manager* manager)
     // <rtc-template block="initializer">
   : RTC::DataFlowComponentBase(manager),
     m_p_dataIn("Data", m_p_data),
-    m_p_feedbackOut("Feedback", m_p_feedback)
+    m_p_feedbackOut("Feedback", m_p_feedback),
+    m_p_cameraOut("Camera", m_p_camera)
 
     // </rtc-template>
 {
@@ -60,6 +61,7 @@ RTC::ReturnCode_t Simulation::onInitialize()
   
   // Set OutPort buffer
   addOutPort("Feedback", m_p_feedbackOut);
+  addOutPort("Camera", m_p_cameraOut);
   
   // Set service provider to Ports
   
