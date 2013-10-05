@@ -10,7 +10,7 @@
 #   --module-desc='Computer vision RTC' --module-version=0.0.1 --module-vendor=UDEM 
 #   --module-category=Artificial intelligence --module-comp-type=STATIC 
 #   --module-act-type=PERIODIC --module-max-inst=1 
-#   --inport=Option:RTC::TimedString --outport=Result:RTC::TimedString --outport=Status:RTC::TimedULong 
+#   --inport=Option:RTC::TimedString --inport=Camera:RTC::CameraImage --outport=Result:RTC::TimedString --outport=Status:RTC::TimedULong 
 
 
 ======================================================================
@@ -70,6 +70,24 @@ Lang Type:
 	Description: 
 	PortType: 
 	DataType:    RTC::TimedString
+	MaxOut: 
+	[Data Elements]
+		Name:
+		Type:            
+		Number:          
+		Semantics:       
+		Unit:            
+		Frequency:       
+		Operation Cycle: 
+		RangeLow:
+		RangeHigh:
+		DefaultValue:
+
+	Name:        Camera
+	PortNumber:  1
+	Description: 
+	PortType: 
+	DataType:    RTC::CameraImage
 	MaxOut: 
 	[Data Elements]
 		Name:

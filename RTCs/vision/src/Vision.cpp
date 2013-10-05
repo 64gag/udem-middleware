@@ -65,6 +65,7 @@ Vision::Vision(RTC::Manager* manager)
     // <rtc-template block="initializer">
   : RTC::DataFlowComponentBase(manager),
     m_p_optionIn("Option", m_p_option),
+    m_p_cameraIn("Camera", m_p_camera),
     m_p_resultOut("Result", m_p_result),
     m_p_statusOut("Status", m_p_status)
 
@@ -87,6 +88,7 @@ RTC::ReturnCode_t Vision::onInitialize()
   // <rtc-template block="registration">
   // Set InPort buffers
   addInPort("Option", m_p_optionIn);
+  addInPort("Camera", m_p_cameraIn);
   
   // Set OutPort buffer
   addOutPort("Result", m_p_resultOut);

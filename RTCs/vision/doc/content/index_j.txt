@@ -109,6 +109,7 @@ Visionは ``VisionComp`` を実行（ ``${prefix}/components/bin`` に
 ポート名        ポート型    データ型                       意味
 =============== =========== ============================== ====
 Option          InPort      RTC::TimedString               
+Camera          InPort      RTC::CameraImage               
 Result          OutPort     RTC::TimedString               
 Status          OutPort     RTC::TimedULong                
 =============== =========== ============================== ====

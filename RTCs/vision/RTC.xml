@@ -18,6 +18,7 @@
         <rtc:OnModeChanged xsi:type="rtcDoc:action_status_doc" rtc:implemented="false"/>
     </rtc:Actions>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="BOTTOM" rtcExt:variableName="p_option" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedString" rtc:name="Option" rtc:portType="DataInPort"/>
+    <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="RIGHT" rtcExt:variableName="p_camera" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::CameraImage" rtc:name="Camera" rtc:portType="DataInPort"/>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="BOTTOM" rtcExt:variableName="p_result" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedString" rtc:name="Result" rtc:portType="DataOutPort"/>
     <rtc:DataPorts xsi:type="rtcExt:dataport_ext" rtcExt:position="BOTTOM" rtcExt:variableName="p_status" rtc:unit="" rtc:subscriptionType="" rtc:dataflowType="" rtc:interfaceType="" rtc:idlFile="" rtc:type="RTC::TimedULong" rtc:name="Status" rtc:portType="DataOutPort"/>
     <rtc:Language xsi:type="rtcExt:language_ext" rtc:kind="C++"/>

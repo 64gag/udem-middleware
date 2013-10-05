@@ -232,6 +232,10 @@ class Vision
   /*!
    */
   InPort<RTC::TimedString> m_p_optionIn;
+  RTC::CameraImage m_p_camera;
+  /*!
+   */
+  InPort<RTC::CameraImage> m_p_cameraIn;
   
   // </rtc-template>
 
