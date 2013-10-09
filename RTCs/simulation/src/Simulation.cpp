@@ -113,6 +113,13 @@ RTC::ReturnCode_t Simulation::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Simulation::onExecute(RTC::UniqueId ec_id)
 {
+  if (m_p_dataIn.isNew())
+    {
+      m_p_dataIn.read();
+      std::cout << "Received: " << std::endl << m_p_data.data << std::endl;
+    }
+  coil::usleep(1000);
+
   return RTC::RTC_OK;
 }
 
