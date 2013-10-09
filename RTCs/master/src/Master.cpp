@@ -122,6 +122,14 @@ RTC::ReturnCode_t Master::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Master::onExecute(RTC::UniqueId ec_id)
 {
+
+  if (m_p_status_hardwareIn.isNew())
+    {
+      m_p_status_hardwareIn.read();
+      std::cout << "Received: " << std::endl << m_p_status_hardware.data << std::endl;
+    }
+  coil::usleep(1000);
+
   return RTC::RTC_OK;
 }
 
