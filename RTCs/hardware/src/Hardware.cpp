@@ -11,7 +11,7 @@
 #include <json/json.h>
 #include "Hardware.h"
 
-#define EXEC_DELAY 1000
+#define EXEC_DELAY 3000000
 
 enum {
         HW_CURRENT=0,
@@ -51,31 +51,39 @@ class H9_Hardware {
 	float slopes[ANGLE_COUNT];
 	float angles[HW_COUNT][ANGLE_COUNT];
 	int updated;
+	unsigned int utid;
  public:
 	H9_Hardware();
 	int setValues(float*, float*, unsigned short int);
 	std::string getJSON(unsigned short int t);
 	void setSlopes(float*);
-	void doUpdate(void);
+	unsigned int doUpdate(void);
 } HW;
 
 void H9_Hardware::setSlopes(float *s){
 	setValues(NULL, s, 0);
 }
 
-void H9_Hardware::doUpdate(void){
+unsigned int H9_Hardware::doUpdate(void){
+
+ unsigned int ret = 0;
+
 	for(int i=0;i<ANGLE_COUNT;i++){
 		if (angles[HW_CURRENT][i] != angles[HW_TARGET][i])
 		{
+			ret |= (1 << i);
 			updated = 1;
 			float smaller_current = (((float)(angles[HW_CURRENT][i]<angles[HW_TARGET][i]))-0.5f)*2.0f;	//Ugly way to get -1 or 1
 			float diff = (angles[HW_TARGET][i]-angles[HW_CURRENT][i])*smaller_current;
-			angles[HW_CURRENT][i] += (diff>slopes[i] ? slopes[i]: diff)*smaller_current;			//Should I use setValues()? :P
+			angles[HW_CURRENT][i] += (diff>slopes[i] ? slopes[i]: diff)*smaller_current;
 		}
 	}
+
+ return ret;
 }
 
 H9_Hardware::H9_Hardware(){
+	utid = 1;
 // Read these from the robot
 	float slopes[4] = {0.5f, 0.5f, 0.5f, 0.5f};
 	this->setSlopes(slopes);
@@ -110,7 +118,7 @@ std::string H9_Hardware::getJSON(unsigned short int t = 0){
 	toRobot["type"] = "broadcast";
 	toRobot["data"] = out.str();
 	toRobot["responseRequested"] = true;
-	toRobot["utid"] = 1;
+	toRobot["utid"] = utid++;
 
  return toRobot.toStyledString();
 }
@@ -175,14 +183,6 @@ RTC::ReturnCode_t Hardware::onFinalize()
 
 RTC::ReturnCode_t Hardware::onStartup(RTC::UniqueId ec_id)
 {
-
-	for(int xx=0;xx<10;xx++)
-	{
-		std::cout << HW.getJSON(HW_CURRENT) << std::endl;
-		HW.doUpdate();
-		coil::usleep(EXEC_DELAY);
-	}
-
   return RTC::RTC_OK;
 }
 
@@ -204,8 +204,6 @@ RTC::ReturnCode_t Hardware::onActivated(RTC::UniqueId ec_id)
 RTC::ReturnCode_t Hardware::onDeactivated(RTC::UniqueId ec_id)
 {
 
-
-std::cout << "Ran onDeactivated" << std::endl;
   return RTC::RTC_OK;
 }
 
@@ -213,15 +211,16 @@ std::cout << "Ran onDeactivated" << std::endl;
 RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 {
 
-
-
 // Creation//
-
-
-
-
-
-  coil::usleep(1000000);
+	m_p_status.data = HW.doUpdate();
+	m_p_statusOut.write();
+	if(m_p_status.data){
+		m_p_data.data = HW.getJSON(HW_CURRENT).c_str();
+		m_p_dataOut.write();
+	}
+	std::cout << HW.getJSON(HW_CURRENT);
+	coil::usleep(EXEC_DELAY);
+	
   return RTC::RTC_OK;
 }
 
