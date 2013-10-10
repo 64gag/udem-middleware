@@ -223,7 +223,8 @@ class Vision
 
   // Configuration variable declaration
   // <rtc-template block="config_declare">
-
+  std::string m_str_files_path;
+  std::string m_str_images;
   // </rtc-template>
 
   // DataInPort declaration

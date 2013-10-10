@@ -20,22 +20,10 @@
 
 #define FLAG_DRAW 1
 
-enum {
-        TARGET_FAST=0,
-        TARGET_SLOW,
-        TARGET_LEFT,
-        TARGET_RIGHT,
-        TARGET_STAIRS,
-        TARGET_ELEVATOR,
-        TARGET_STOP,
-	TARGET_COUNT /* Leave this alone! */
-};
-
 using namespace cv;
 
-std::string path = "/home/paguiar/Dropbox/UDEM/PPD - Middleware/Vision/src/";
-std::string file[TARGET_COUNT] = { "fast.jpg", "slow.jpg", "left.jpg", "right.jpg", "stairs.jpg", "elevator.jpg", "stop.jpg" };
-
+std::vector<std::string> images;
+int target_count;
 
 /* Globals are ugly... but fast for prototyping. Change later */
 Mat *t_images = NULL;
@@ -62,9 +50,23 @@ static const char* vision_spec[] =
     "max_instance",      "1",
     "language",          "C++",
     "lang_type",         "compile",
+    "conf.default.str_files_path", "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/",
+    "conf.default.str_images", "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg",
     ""
   };
 // </rtc-template>
+
+/* Evan Teran's string-splitting code from: http://stackoverflow.com/questions/236129/how-to-split-a-string-in-c */
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s); std::string item;
+    while (std::getline(ss, item, delim)) { elems.push_back(item); }
+    return elems;
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems; split(s, delim, elems);
+    return elems;
+}
 
 /*!
  * @brief constructor
@@ -112,8 +114,10 @@ RTC::ReturnCode_t Vision::onInitialize()
   // </rtc-template>
 
   // <rtc-template block="bind_config">
+  bindParameter("str_files_path", m_str_files_path, "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/");
+  bindParameter("str_images", m_str_images, "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg");
   // </rtc-template>
-  
+
   return RTC::RTC_OK;
 }
 
@@ -141,17 +145,18 @@ RTC::ReturnCode_t Vision::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t Vision::onActivated(RTC::UniqueId ec_id)
 {
 	gFlags |= FLAG_DRAW;
-
-	t_images = new Mat[TARGET_COUNT];
-	t_descriptors = new Mat[TARGET_COUNT];
-	t_kp = new std::vector<KeyPoint>[TARGET_COUNT];
-	t_ob_corners = new std::vector<Point2f>[TARGET_COUNT];
+	images = split(m_str_images, ',');
+	target_count = images.size();
+	t_images = new Mat[target_count];
+	t_descriptors = new Mat[target_count];
+	t_kp = new std::vector<KeyPoint>[target_count];
+	t_ob_corners = new std::vector<Point2f>[target_count];
 	detector = new SurfFeatureDetector(300);
 	extractor = new SurfDescriptorExtractor();
 	matcher = new FlannBasedMatcher();
 
-	for (int i=0; i<TARGET_COUNT; i++){
-		t_images[i] = imread( path+file[i], CV_LOAD_IMAGE_GRAYSCALE );
+	for (int i=0; i<target_count; i++){
+		t_images[i] = imread( m_str_files_path+images[i], CV_LOAD_IMAGE_GRAYSCALE );
 		detector->detect( t_images[i], t_kp[i]);
 		extractor->compute( t_images[i], t_kp[i], t_descriptors[i] );
 		t_ob_corners[i].push_back(cvPoint(0,0));
@@ -180,9 +185,9 @@ RTC::ReturnCode_t Vision::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 {
-	double *large = new double[TARGET_COUNT];
-	double *width = new double[TARGET_COUNT];
-	double *area = new double[TARGET_COUNT];
+	double *large = new double[target_count];
+	double *width = new double[target_count];
+	double *area = new double[target_count];
 
 	gFlags |= FLAG_DRAW;
 
@@ -190,12 +195,12 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	VideoCapture cap(0);
 	cap >> frame;
 
-	std::vector<vector<DMatch > > *t_matches = new std::vector<vector<DMatch > >[TARGET_COUNT];
-	std::vector<DMatch > *t_good_matches = new std::vector<DMatch >[TARGET_COUNT];
-	std::vector<Point2f> *t_ob = new std::vector<Point2f>[TARGET_COUNT];
-	std::vector<Point2f> *t_ob_center = new std::vector<Point2f>[TARGET_COUNT];
-	std::vector<Point2f> *t_scene = new std::vector<Point2f>[TARGET_COUNT];
-	std::vector<Point2f> *t_scene_corners = new std::vector<Point2f>[TARGET_COUNT];
+	std::vector<vector<DMatch > > *t_matches = new std::vector<vector<DMatch > >[target_count];
+	std::vector<DMatch > *t_good_matches = new std::vector<DMatch >[target_count];
+	std::vector<Point2f> *t_ob = new std::vector<Point2f>[target_count];
+	std::vector<Point2f> *t_ob_center = new std::vector<Point2f>[target_count];
+	std::vector<Point2f> *t_scene = new std::vector<Point2f>[target_count];
+	std::vector<Point2f> *t_scene_corners = new std::vector<Point2f>[target_count];
 
 	Mat des_image, img_matches;
 	std::vector<KeyPoint> kp_image;
@@ -208,7 +213,7 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	detector->detect( image, kp_image );
 	extractor->compute( image, kp_image, des_image );
 
-	for(int t=0; t<TARGET_COUNT; t++){
+	for(int t=0; t<target_count; t++){
 		t_scene_corners[t].resize(4);
 		matcher->knnMatch(t_descriptors[t], des_image, t_matches[t], 2);
 		for(int i = 0; i < min(des_image.rows-1,(int) t_matches[t].size()); i++) //THIS LOOP IS SENSITIVE TO SEGFAULTS
@@ -242,10 +247,10 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 				large[t]=cv::norm(t_scene_corners[t][1]-t_scene_corners[t][0]);
 				width[t]=cv::norm(t_scene_corners[t][2]-t_scene_corners[t][1]);
 				area[t]=large[t]*width[t];
-				if(area[t]>15000 && area[t]<300000)
+				if(area[t]>15000 && area[t]<300000) /* Image detected! */
 				{
 					t_ob_center[t].push_back((t_scene_corners[t][0]+t_scene_corners[t][1])*.5);
-					std::cout<< "Area "+ file[t] + ": " << area[t] << + " and coord " << t_ob_center[t] << std::endl;
+					std::cout<< "Area "+ images[t] + ": " << area[t] << + " and coord " << t_ob_center[t] << std::endl;
 				}
 			}
 		}
