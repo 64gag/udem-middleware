@@ -69,6 +69,20 @@ void strings2floats(std::string *s, std::vector<float> *f)
 	}
 }
 
+/* Extracts float numbers from 's' using format 'f' (where floats are specified by 'token') */
+std::vector<float> getFloats(std::string s, std::string f, char token)
+{
+	std::vector<float> ret;
+	std::vector<std::string> exploded = split(f, token);
+
+	for(unsigned int i=0; i+1 < exploded.size(); i++){
+		s = s.substr(exploded[i].length());
+		std::size_t notnum = s.find_first_not_of("0123456789.");
+		ret.push_back(::atof(s.substr(0, notnum).c_str()));
+		s = s.substr(notnum);
+	}
+ return ret;
+}
 
 class HardwareController {
  private:
@@ -80,23 +94,41 @@ class HardwareController {
 	std::string json_data_format;
  public:
 	HardwareController(int, std::vector<float>, std::string);
-	int setValues(std::vector<float>, unsigned short int);
-	int setValues(std::string, unsigned short int);
+	~HardwareController(void);
+	void setValues(std::vector<float>, unsigned short int);
+	void setValues(std::string, unsigned short int);
+	void setValues(std::string);
 	unsigned int doUpdate(void);
-	std::string getJSON(unsigned short int t);
+	std::string getJSON(void);
+	unsigned int haveCurrent();
+	unsigned int haveTarget();
 };
 
-int HardwareController::setValues(std::string s, unsigned short int t){
- std::vector<float> f;
- strings2floats(&s, &f);
- setValues(f,t);
+unsigned int HardwareController::haveCurrent(void)
+{
+	return angles_current.size();
+}
 
- return 0;
+unsigned int HardwareController::haveTarget(void)
+{
+	return angles_target.size();
+}
+
+void HardwareController::setValues(std::string s)
+{
+	setValues(getFloats(s, json_data_format, '%'), V_CURRENT);
+}
+
+void HardwareController::setValues(std::string s, unsigned short int t)
+{
+	std::vector<float> f;
+	strings2floats(&s, &f);
+	setValues(f,t);
 }
 
 
-int HardwareController::setValues(std::vector<float> v, unsigned short int t){
-
+void HardwareController::setValues(std::vector<float> v, unsigned short int t)
+{
 	switch(t){
 		case V_SLOPES:
 			slopes = v;
@@ -108,8 +140,6 @@ int HardwareController::setValues(std::vector<float> v, unsigned short int t){
 			angles_target = v;
 		break;
 	}
-
-	return 0;
 }
 
 
@@ -135,17 +165,15 @@ HardwareController::HardwareController(int j, std::vector<float> s, std::string 
 	joints_count = j;
 	slopes = s;
 	json_data_format = f;
-	setValues("10,10,10,10,10,10,10,10", V_CURRENT);
 	setValues("14,34,-1,-2,3,1,50,20", V_TARGET);
-
 }
 
-/*
-HardwareController::~HardwareController()
+
+HardwareController::~HardwareController(void)
 {
 }
-*/
-std::string HardwareController::getJSON(unsigned short int t = 0){
+
+std::string HardwareController::getJSON(void){
 
 	std::ostringstream out;
 	std::vector<std::string> format_pieces = split(json_data_format, '%');
@@ -221,23 +249,17 @@ RTC::ReturnCode_t Hardware::onInitialize()
   bindParameter("str_json_data_format", m_str_json_data_format, "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][ANGLE.7:%][GRIPPER:%])");
   bindParameter("str_slopes", m_str_slopes, "0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5");
 
-  return RTC::RTC_OK;
+ return RTC::RTC_OK;
 }
 
 
 RTC::ReturnCode_t Hardware::onFinalize()
 {
- delete HW;
  return RTC::RTC_OK;
 }
 
 RTC::ReturnCode_t Hardware::onStartup(RTC::UniqueId ec_id)
 {
- /* Load configurations to a new HardwareController object */
- std::vector<float> slopes;
- strings2floats(&m_str_slopes, &slopes);
- HW = new HardwareController(m_int_joints, slopes, m_str_json_data_format);
-
  return RTC::RTC_OK;
 }
 
@@ -252,22 +274,26 @@ RTC::ReturnCode_t Hardware::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Hardware::onActivated(RTC::UniqueId ec_id)
 {
-  return RTC::RTC_OK;
+	/* Load configurations to a new HardwareController object */
+	std::vector<float> slopes;
+	strings2floats(&m_str_slopes, &slopes);
+	HW = new HardwareController(m_int_joints, slopes, m_str_json_data_format);
+
+ return RTC::RTC_OK;
 }
 
 
 RTC::ReturnCode_t Hardware::onDeactivated(RTC::UniqueId ec_id)
 {
+	delete HW;
 
-  return RTC::RTC_OK;
+ return RTC::RTC_OK;
 }
 
 
 RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 {
-// Creation//
 	/* Listen to the master */
-
 	if (m_p_positionIn.isNew())
 	{
 		m_p_positionIn.read();
@@ -282,21 +308,40 @@ RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 		m_p_feedbackIn.read();
 		std::ostringstream out;
 		out << m_p_feedback.data; /* Is there a better way to do this? */
-		HW->setValues(out.str(), V_CURRENT);
+
+		/* Parse received data */
+		{
+			Json::Value root;
+			Json::Reader reader;
+			bool parsedSuccess = reader.parse(out.str(), root, false);
+			if(!parsedSuccess)
+			{
+				//panic out
+			}
+			HW->setValues(root["data"].asString());
+		}
 	}
 
-	unsigned int unready_joints = HW->doUpdate();
-	if(unready_joints)
-	{
-		m_p_status.data = unready_joints;
-		m_p_statusOut.write();
-		m_p_data.data = HW->getJSON(HW_CURRENT).c_str();
-		m_p_dataOut.write();
+	if(HW->haveCurrent() && HW->haveTarget()){ /* Check if we know the current and desired status, otherwise don't do anything */
+		unsigned int unready_joints = HW->doUpdate();
+		if(unready_joints)
+		{
+			m_p_status.data = unready_joints;
+			m_p_statusOut.write();
+			m_p_data.data = HW->getJSON().c_str();
+			m_p_dataOut.write();
+		}else{ /* All joints ready, won't update */
+			if(m_p_status.data) /* Set status to 0 so the Master block knows we are done */
+			{
+				m_p_status.data = 0;
+				m_p_statusOut.write();
+			}
+		}
 	}
 
 	coil::usleep(EXEC_DELAY);
 
-  return RTC::RTC_OK;
+ return RTC::RTC_OK;
 }
 
 /*
@@ -333,8 +378,6 @@ RTC::ReturnCode_t Hardware::onRateChanged(RTC::UniqueId ec_id)
   return RTC::RTC_OK;
 }
 */
-
-
 
 extern "C"
 {
