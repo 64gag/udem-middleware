@@ -6,7 +6,7 @@
  *
  * $Id$
  */
-
+#include <json/json.h>
 #include "Simulation.h"
 
 // Module specification
@@ -113,11 +113,18 @@ RTC::ReturnCode_t Simulation::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Simulation::onExecute(RTC::UniqueId ec_id)
 {
-  if (m_p_dataIn.isNew())
-    {
-      m_p_dataIn.read();
-      std::cout << "Received: " << std::endl << m_p_data.data << std::endl;
-    }
+
+	if (m_p_dataIn.isNew())
+	{
+		m_p_dataIn.read();
+		std::cout << "Received: " << std::endl << m_p_data.data << std::endl;
+		{
+			std::ostringstream out;
+			out << m_p_data.data;
+			m_p_feedback.data = out.str().c_str();
+			m_p_feedbackOut.write();
+		}
+	}
   coil::usleep(1000);
 
   return RTC::RTC_OK;
