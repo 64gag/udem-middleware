@@ -244,10 +244,10 @@ RTC::ReturnCode_t Hardware::onInitialize()
   // </rtc-template>
 
   // <rtc-template block="bind_config">
-  // </rtc-template>
   bindParameter("int_joints", m_int_joints, "8");
   bindParameter("str_json_data_format", m_str_json_data_format, "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][ANGLE.7:%][GRIPPER:%])");
   bindParameter("str_slopes", m_str_slopes, "0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5");
+  // </rtc-template>
 
  return RTC::RTC_OK;
 }
