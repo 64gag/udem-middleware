@@ -123,11 +123,31 @@ RTC::ReturnCode_t Master::onDeactivated(RTC::UniqueId ec_id)
 RTC::ReturnCode_t Master::onExecute(RTC::UniqueId ec_id)
 {
 
-  if (m_p_status_hardwareIn.isNew())
-    {
-      m_p_status_hardwareIn.read();
-      std::cout << "Received: " << std::endl << m_p_status_hardware.data << std::endl;
-    }
+    m_p_status_visionIn("Status_vision", m_p_status_vision),
+    m_p_result_visionIn("Result_vision", m_p_result_vision),
+
+    m_p_result_kinematicsIn("Result_kinematics", m_p_result_kinematics),
+
+
+
+	if (m_p_status_hardwareIn.isNew())
+	{
+		m_p_status_hardwareIn.read();
+		std::cout << "Received hardwareIn: " << std::endl << m_p_status_hardware.data << std::endl;
+	}
+
+	if (m_p_result_visionIn.isNew())
+	{
+		m_p_result_visionIn.read();
+		std::cout << "Received visionIn: " << std::endl << m_p_result_vision.data << std::endl;
+	}
+
+	if (m_p_result_kinematicsIn.isNew())
+	{
+		m_p_result_kinematicsIn.read();
+		std::cout << "Received kinematicsIn: " << std::endl << m_p_result_kinematics.data << std::endl;
+	}
+
   coil::usleep(1000);
 
   return RTC::RTC_OK;
