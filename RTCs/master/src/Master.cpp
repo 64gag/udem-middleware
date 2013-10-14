@@ -143,7 +143,7 @@ RTC::ReturnCode_t Master::onExecute(RTC::UniqueId ec_id)
 		std::cout << "Received kinematicsIn: " << std::endl << m_p_result_kinematics.data << std::endl;
 	}
 
-  coil::usleep(1000);
+  coil::usleep(m_int_exec_delay);
 
   return RTC::RTC_OK;
 }
