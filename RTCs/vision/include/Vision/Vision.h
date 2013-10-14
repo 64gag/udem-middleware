@@ -223,6 +223,10 @@ class Vision
 
   // Configuration variable declaration
   // <rtc-template block="config_declare">
+  int m_int_drawflag;
+  int m_int_area_min;
+  int m_int_area_max;
+  int m_int_exec_delay;
   std::string m_str_files_path;
   std::string m_str_images;
   // </rtc-template>

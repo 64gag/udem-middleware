@@ -17,6 +17,7 @@
 #include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <json/json.h>
 
 #define FLAG_DRAW 1
 
@@ -33,7 +34,7 @@ std::vector<Point2f> * t_ob_corners = NULL;
 SurfFeatureDetector * detector = NULL;
 SurfDescriptorExtractor * extractor = NULL;
 FlannBasedMatcher * matcher = NULL;
-unsigned int gFlags = 0;
+int targets_encoded=0xffff;
 
 // Module specification
 // <rtc-template block="module_spec">
@@ -50,6 +51,10 @@ static const char* vision_spec[] =
     "max_instance",      "1",
     "language",          "C++",
     "lang_type",         "compile",
+    "conf.default.int_drawflag", "0",
+    "conf.default.int_area_min", "15000",
+    "conf.default.int_area_max", "300000",
+    "conf.default.int_exec_delay", "200000",
     "conf.default.str_files_path", "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/",
     "conf.default.str_images", "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg",
     ""
@@ -114,6 +119,10 @@ RTC::ReturnCode_t Vision::onInitialize()
   // </rtc-template>
 
   // <rtc-template block="bind_config">
+  bindParameter("int_drawflag", m_int_drawflag, "0");
+  bindParameter("int_area_min", m_int_area_min, "15000");
+  bindParameter("int_area_max", m_int_area_max, "300000");
+  bindParameter("int_exec_delay", m_int_exec_delay, "200000");
   bindParameter("str_files_path", m_str_files_path, "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/");
   bindParameter("str_images", m_str_images, "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg");
   // </rtc-template>
@@ -144,7 +153,6 @@ RTC::ReturnCode_t Vision::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Vision::onActivated(RTC::UniqueId ec_id)
 {
-	gFlags |= FLAG_DRAW;
 	images = split(m_str_images, ',');
 	target_count = images.size();
 	t_images = new Mat[target_count];
@@ -185,11 +193,35 @@ RTC::ReturnCode_t Vision::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 {
+	Json::Value jsonDetected;
+
 	double *large = new double[target_count];
 	double *width = new double[target_count];
 	double *area = new double[target_count];
 
-	gFlags |= FLAG_DRAW;
+	/* Follow master's orders */
+	if (m_p_optionIn.isNew())
+	{
+		m_p_optionIn.read();
+		std::ostringstream opts;
+		opts << m_p_option.data; /* Is there a better way to do this? */
+
+		/* Parse received data */
+		{
+			Json::Value root;
+			Json::Reader reader;
+			bool parsedSuccess = reader.parse(opts.str(), root, false);
+			if(!parsedSuccess)
+			{
+				//panic out
+			}
+
+			if(root["targets_encoded"].asBool())
+			{
+				targets_encoded = root["targets_encoded"].asInt();
+			}
+		}
+	}
 
 	Mat frame;
 	VideoCapture cap(0);
@@ -214,6 +246,12 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	extractor->compute( image, kp_image, des_image );
 
 	for(int t=0; t<target_count; t++){
+
+		if (!(targets_encoded & (1 << t)))
+		{
+			continue;
+		}
+
 		t_scene_corners[t].resize(4);
 		matcher->knnMatch(t_descriptors[t], des_image, t_matches[t], 2);
 		for(int i = 0; i < min(des_image.rows-1,(int) t_matches[t].size()); i++) //THIS LOOP IS SENSITIVE TO SEGFAULTS
@@ -228,37 +266,50 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 
 		if (t_good_matches[t].size() >= 4)
 		{
-			if(gFlags & FLAG_DRAW)
+
+			for(unsigned int i = 0; i < t_good_matches[t].size(); i++ )
 			{
-				for(unsigned int i = 0; i < t_good_matches[t].size(); i++ )
-				{
-					t_ob[t].push_back( t_kp[t][ t_good_matches[t][i].queryIdx ].pt );
-					t_scene[t].push_back( kp_image[ t_good_matches[t][i].trainIdx ].pt );
-				}
+				t_ob[t].push_back( t_kp[t][ t_good_matches[t][i].queryIdx ].pt );
+				t_scene[t].push_back( kp_image[ t_good_matches[t][i].trainIdx ].pt );
+			}
 
-				H = findHomography( t_ob[t], t_scene[t], CV_RANSAC );
-				perspectiveTransform( t_ob_corners[t], t_scene_corners[t], H);
+			H = findHomography( t_ob[t], t_scene[t], CV_RANSAC );
+			perspectiveTransform( t_ob_corners[t], t_scene_corners[t], H);
 
+			large[t]=cv::norm(t_scene_corners[t][1]-t_scene_corners[t][0]);
+			width[t]=cv::norm(t_scene_corners[t][2]-t_scene_corners[t][1]);
+			area[t]=large[t]*width[t];
+
+			if(area[t] > m_int_area_min && area[t] < m_int_area_max) /* Image detected! */
+			{
+				t_ob_center[t].push_back((t_scene_corners[t][0]+t_scene_corners[t][1])*.5);
+				jsonDetected[images[t]]["id"] = t;
+				jsonDetected[images[t]]["area"] = area[t];
+//				float x, y;
+//				x = t_ob_center[t][0].x; y = t_ob_center[t][0].y;
+				jsonDetected[images[t]]["center"]["x"] = t_ob_center[t][0].x;
+				jsonDetected[images[t]]["center"]["y"] = t_ob_center[t][0].y;
+			}
+
+			if(m_int_drawflag)
+			{
 				line( image, t_scene_corners[t][0], t_scene_corners[t][1], Scalar(0, 255, 0), 4 );
 				line( image, t_scene_corners[t][1], t_scene_corners[t][2], Scalar( 0, 255, 0), 4 );
 				line( image, t_scene_corners[t][2], t_scene_corners[t][3], Scalar( 0, 255, 0), 4 );
 				line( image, t_scene_corners[t][3], t_scene_corners[t][0], Scalar( 0, 255, 0), 4 );
-
-				large[t]=cv::norm(t_scene_corners[t][1]-t_scene_corners[t][0]);
-				width[t]=cv::norm(t_scene_corners[t][2]-t_scene_corners[t][1]);
-				area[t]=large[t]*width[t];
-				if(area[t]>15000 && area[t]<300000) /* Image detected! */
-				{
-					t_ob_center[t].push_back((t_scene_corners[t][0]+t_scene_corners[t][1])*.5);
-					std::cout<< "Area "+ images[t] + ": " << area[t] << + " and coord " << t_ob_center[t] << std::endl;
-				}
 			}
 		}
 	}
 
+	if(jsonDetected.size()){
+		m_p_result.data = jsonDetected.toStyledString().c_str();
+		m_p_resultOut.write();
+	}
+
 	//Show detected matches
-	if(gFlags & FLAG_DRAW){
+	if(m_int_drawflag){
 		imshow( "Result", image );
+		coil::usleep(m_int_exec_delay);
 	}
 
 	delete[] t_matches;
@@ -270,7 +321,7 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	delete[] large;
 	delete[] width;
 	delete[] area;
-	coil::usleep(100000);
+	coil::usleep(m_int_exec_delay);
   return RTC::RTC_OK;
 }
 
