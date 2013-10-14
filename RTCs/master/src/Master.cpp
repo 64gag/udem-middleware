@@ -24,6 +24,7 @@ static const char* master_spec[] =
     "max_instance",      "1",
     "language",          "C++",
     "lang_type",         "compile",
+    "conf.default.int_exec_delay", "50000",
     ""
   };
 // </rtc-template>
@@ -82,6 +83,7 @@ RTC::ReturnCode_t Master::onInitialize()
   // </rtc-template>
 
   // <rtc-template block="bind_config">
+  bindParameter("int_exec_delay", m_int_exec_delay, "50000");
   // </rtc-template>
   
   return RTC::RTC_OK;
@@ -122,13 +124,6 @@ RTC::ReturnCode_t Master::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Master::onExecute(RTC::UniqueId ec_id)
 {
-
-    m_p_status_visionIn("Status_vision", m_p_status_vision),
-    m_p_result_visionIn("Result_vision", m_p_result_vision),
-
-    m_p_result_kinematicsIn("Result_kinematics", m_p_result_kinematics),
-
-
 
 	if (m_p_status_hardwareIn.isNew())
 	{

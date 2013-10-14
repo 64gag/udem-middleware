@@ -223,7 +223,7 @@ class Master
 
   // Configuration variable declaration
   // <rtc-template block="config_declare">
-
+  int m_int_exec_delay;
   // </rtc-template>
 
   // DataInPort declaration
