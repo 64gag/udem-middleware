@@ -11,8 +11,6 @@
 #include <json/json.h>
 #include "Hardware.h"
 
-#define EXEC_DELAY 500000
-
 enum {
         HW_CURRENT=0,
         HW_TARGET,
@@ -40,6 +38,7 @@ static const char* hardware_spec[] =
     "max_instance",      "5",
     "language",          "C++",
     "lang_type",         "compile",
+    "conf.default.int_exec_delay", "100000",
     "conf.default.int_joints", "8",
     "conf.default.str_json_data_format", "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][ANGLE.7:%][GRIPPER:%])",
     "conf.default.str_slopes", "0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5",
@@ -166,6 +165,7 @@ HardwareController::HardwareController(int j, std::vector<float> s, std::string 
 	slopes = s;
 	json_data_format = f;
 	setValues("14,34,-1,-2,3,1,50,20", V_TARGET);
+	setValues("-30,-10,-20,-34,-40,-20,10,0", V_CURRENT);
 }
 
 
@@ -339,7 +339,7 @@ RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 		}
 	}
 
-	coil::usleep(EXEC_DELAY);
+	coil::usleep(m_int_exec_delay);
 
  return RTC::RTC_OK;
 }

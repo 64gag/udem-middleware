@@ -224,6 +224,7 @@ class Hardware
   // Configuration variable declaration
   // <rtc-template block="config_declare">
   int m_int_joints;
+  int m_int_exec_delay;
   std::string m_str_json_data_format;
   std::string m_str_slopes;
   // </rtc-template>
