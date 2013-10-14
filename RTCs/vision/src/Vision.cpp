@@ -285,8 +285,6 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 				t_ob_center[t].push_back((t_scene_corners[t][0]+t_scene_corners[t][1])*.5);
 				jsonDetected[images[t]]["id"] = t;
 				jsonDetected[images[t]]["area"] = area[t];
-//				float x, y;
-//				x = t_ob_center[t][0].x; y = t_ob_center[t][0].y;
 				jsonDetected[images[t]]["center"]["x"] = t_ob_center[t][0].x;
 				jsonDetected[images[t]]["center"]["y"] = t_ob_center[t][0].y;
 			}
