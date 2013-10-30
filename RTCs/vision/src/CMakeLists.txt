@@ -1,5 +1,5 @@
-set(comp_srcs Vision.cpp )
-set(standalone_srcs VisionComp.cpp)
+set(comp_srcs Vision.cpp)
+set(standalone_srcs VisionComp.cpp VisionBridge.c)
 
 if (DEFINED OPENRTM_INCLUDE_DIRS)
   string(REGEX REPLACE "-I" ";"
@@ -23,6 +23,7 @@ if (DEFINED OPENRTM_LIBRARIES)
 endif (DEFINED OPENRTM_LIBRARIES)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME})
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/idl)
@@ -50,6 +51,7 @@ target_link_libraries(${PROJECT_NAME}Comp ${OPENRTM_LIBRARIES})
 find_package( OpenCV REQUIRED )
 target_link_libraries( ${PROJECT_NAME}Comp ${OpenCV_LIBS} )
 target_link_libraries(${PROJECT_NAME}Comp json) #This is jsoncpp! I installed it as "json", you may have to change this
+target_link_libraries(${PROJECT_NAME}Comp websockets) #libwebsockets
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}Comp
     EXPORT ${PROJECT_NAME}

@@ -1,14 +1,6 @@
-// -*- C++ -*-
-/*!
- * @file  Vision.cpp
- * @brief Computer vision RTC
- * @date $Date$
- *
- * $Id$
- */
-
 #include "Vision.h"
-#include <stdio.h>
+#include "VisionBridge.h"
+
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -18,8 +10,6 @@
 #include <opencv2/nonfree/nonfree.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <json/json.h>
-
-#define FLAG_DRAW 1
 
 using namespace cv;
 
@@ -35,15 +25,15 @@ SurfFeatureDetector * detector = NULL;
 SurfDescriptorExtractor * extractor = NULL;
 FlannBasedMatcher * matcher = NULL;
 int targets_encoded=0xffff;
+unsigned char *cam_data=NULL;
 
 // Module specification
-// <rtc-template block="module_spec">
 static const char* vision_spec[] =
   {
     "implementation_id", "Vision",
     "type_name",         "Vision",
     "description",       "Computer vision RTC",
-    "version",           "0.0.1",
+    "version",           "0.1.0",
     "vendor",            "UDEM",
     "category",          "Artificial intelligence",
     "activity_type",     "PERIODIC",
@@ -51,15 +41,20 @@ static const char* vision_spec[] =
     "max_instance",      "1",
     "language",          "C++",
     "lang_type",         "compile",
-    "conf.default.int_drawflag", "0",
+
+    "conf.default.int_img_width", "320",
+    "conf.default.int_img_height", "240",
+    "conf.default.str_files_path", "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/",
+    "conf.default.str_images", "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg",
+    "conf.default.str_img_rostopic", "/huskycamera/image_raw",
+    "conf.default.str_rosbridge_host", "127.0.0.1",
+    "conf.default.int_rosbridge_port", "9090",
     "conf.default.int_area_min", "15000",
     "conf.default.int_area_max", "300000",
     "conf.default.int_exec_delay", "200000",
-    "conf.default.str_files_path", "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/",
-    "conf.default.str_images", "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg",
+    "conf.default.int_drawflag", "1",
     ""
   };
-// </rtc-template>
 
 /* Evan Teran's string-splitting code from: http://stackoverflow.com/questions/236129/how-to-split-a-string-in-c */
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
@@ -73,59 +68,39 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
-/*!
- * @brief constructor
- * @param manager Maneger Object
- */
 Vision::Vision(RTC::Manager* manager)
-    // <rtc-template block="initializer">
+
   : RTC::DataFlowComponentBase(manager),
     m_p_optionIn("Option", m_p_option),
-    m_p_cameraIn("Camera", m_p_camera),
     m_p_resultOut("Result", m_p_result),
     m_p_statusOut("Status", m_p_status)
-
-    // </rtc-template>
 {
 }
 
-/*!
- * @brief destructor
- */
 Vision::~Vision()
 {
 }
 
-
-
 RTC::ReturnCode_t Vision::onInitialize()
 {
-  // Registration: InPort/OutPort/Service
-  // <rtc-template block="registration">
   // Set InPort buffers
   addInPort("Option", m_p_optionIn);
-  addInPort("Camera", m_p_cameraIn);
   
   // Set OutPort buffer
   addOutPort("Result", m_p_resultOut);
   addOutPort("Status", m_p_statusOut);
-  
-  // Set service provider to Ports
-  
-  // Set service consumers to Ports
-  
-  // Set CORBA Service Ports
-  
-  // </rtc-template>
 
-  // <rtc-template block="bind_config">
-  bindParameter("int_drawflag", m_int_drawflag, "0");
+  bindParameter("int_img_width", m_int_img_width, "320");
+  bindParameter("int_img_height", m_int_img_height, "240");
+  bindParameter("str_files_path", m_str_files_path, "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/");
+  bindParameter("str_images", m_str_images, "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg");
+  bindParameter("str_img_rostopic", m_str_img_rostopic, "/huskycamera/image_raw");
+  bindParameter("str_rosbridge_host", m_str_rosbridge_host, "127.0.0.1");
+  bindParameter("int_rosbridge_port", m_int_rosbridge_port, "9090");
   bindParameter("int_area_min", m_int_area_min, "15000");
   bindParameter("int_area_max", m_int_area_max, "300000");
   bindParameter("int_exec_delay", m_int_exec_delay, "200000");
-  bindParameter("str_files_path", m_str_files_path, "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/");
-  bindParameter("str_images", m_str_images, "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg");
-  // </rtc-template>
+  bindParameter("int_drawflag", m_int_drawflag, "1");
 
   return RTC::RTC_OK;
 }
@@ -135,21 +110,6 @@ RTC::ReturnCode_t Vision::onFinalize()
 {
   return RTC::RTC_OK;
 }
-
-/*
-RTC::ReturnCode_t Vision::onStartup(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Vision::onShutdown(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
 
 RTC::ReturnCode_t Vision::onActivated(RTC::UniqueId ec_id)
 {
@@ -162,6 +122,7 @@ RTC::ReturnCode_t Vision::onActivated(RTC::UniqueId ec_id)
 	detector = new SurfFeatureDetector(300);
 	extractor = new SurfDescriptorExtractor();
 	matcher = new FlannBasedMatcher();
+	cam_data = (unsigned char *)malloc(m_int_img_width*m_int_img_height*3);
 
 	for (int i=0; i<target_count; i++){
 		t_images[i] = imread( m_str_files_path+images[i], CV_LOAD_IMAGE_GRAYSCALE );
@@ -173,12 +134,19 @@ RTC::ReturnCode_t Vision::onActivated(RTC::UniqueId ec_id)
 		t_ob_corners[i].push_back(cvPoint( 0, t_images[i].rows ));
 	}
 
+	if(m_int_drawflag){
+		namedWindow("Result");
+	}
+
   return RTC::RTC_OK;
 }
 
-
 RTC::ReturnCode_t Vision::onDeactivated(RTC::UniqueId ec_id)
 {
+	if(cam_data){
+		free(cam_data); cam_data = NULL;
+	}
+
 	delete[] t_images;
 	delete[] t_descriptors;
 	delete[] t_kp;
@@ -186,10 +154,11 @@ RTC::ReturnCode_t Vision::onDeactivated(RTC::UniqueId ec_id)
 	delete detector;
 	delete extractor;
 	delete matcher;
+	destroyWindow("Result");
+	base64_cleanup();
 
  return RTC::RTC_OK;
 }
-
 
 RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 {
@@ -223,9 +192,8 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 		}
 	}
 
-	Mat frame;
-	VideoCapture cap(0);
-	cap >> frame;
+	getImageRaw(m_str_rosbridge_host.c_str(), m_int_rosbridge_port, m_str_img_rostopic.c_str());
+	Mat frame(m_int_img_height, m_int_img_width, CV_8UC3, cam_data);
 
 	std::vector<vector<DMatch > > *t_matches = new std::vector<vector<DMatch > >[target_count];
 	std::vector<DMatch > *t_good_matches = new std::vector<DMatch >[target_count];
@@ -307,7 +275,7 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	//Show detected matches
 	if(m_int_drawflag){
 		imshow( "Result", image );
-		coil::usleep(m_int_exec_delay);
+		waitKey(1); //Sleep 1 ms, triggers OpenCV events, do not remove
 	}
 
 	delete[] t_matches;
@@ -323,46 +291,8 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
   return RTC::RTC_OK;
 }
 
-/*
-RTC::ReturnCode_t Vision::onAborting(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Vision::onError(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Vision::onReset(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Vision::onStateUpdate(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Vision::onRateChanged(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-
-
 extern "C"
 {
- 
   void VisionInit(RTC::Manager* manager)
   {
     coil::Properties profile(vision_spec);
@@ -370,7 +300,4 @@ extern "C"
                              RTC::Create<Vision>,
                              RTC::Delete<Vision>);
   }
-  
 };
-
-

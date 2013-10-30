@@ -1,4 +1,4 @@
-set(hdrs Vision.h
+set(hdrs Vision.h VisionBridge.h
     PARENT_SCOPE
     )
 
