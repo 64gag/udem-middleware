@@ -65,7 +65,9 @@ public class KinematicsImpl extends DataFlowComponentBase {
         addOutPort("Status", m_StatusOut);
         addOutPort("Result", m_ResultOut);
         // </rtc-template>
-        bindParameter("conf_name0", m_conf_name0, "test");
+        bindParameter("robot_config", m_robot_config, "{\"type_config\" : \"RRRRR\"," +
+        		"\"matrix_config\" : [[[1,2,3], [4,5,6], [7,8,9]],[[1,2,3], [4,5,6], [7,8,9]]], "+
+        		"\"dof\" : 7 }");
         return super.onInitialize();
     }
 
@@ -250,7 +252,7 @@ public class KinematicsImpl extends DataFlowComponentBase {
      * - Name:  conf_name0
      * - DefaultValue: "test"
      */
-    protected StringHolder m_conf_name0 = new StringHolder();
+    protected StringHolder m_robot_config = new StringHolder();
 	// </rtc-template>
 
     // DataInPort declaration

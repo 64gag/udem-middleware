@@ -24,8 +24,10 @@ public class Kinematics implements RtcNewFunc, RtcDeleteFunc, RegisterModuleFunc
     	    "max_instance",      "1",
     	    "language",          "Java",
     	    "lang_type",         "compile",
-            "conf.default.conf_name0", "test",
-            "conf.__widget__.conf_name0", "text",
+            "conf.default.robot_config", "{\"type_config\" : \"RRRRR\"," +
+            		"\"matrix_config\" : [[[1,2,3], [4,5,6], [7,8,9]],[[1,2,3], [4,5,6], [7,8,9]]], "+
+            		"\"dof\" : 7 }",
+            "conf.__widget__.robot_config", "text",
     	    ""
             };
 //  </rtc-template>
