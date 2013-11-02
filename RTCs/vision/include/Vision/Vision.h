@@ -29,9 +29,7 @@ class Vision
 
 
  protected:
-
-
-
+  int m_int_camera;
   int m_int_img_width;
   int m_int_img_height;
   std::string m_str_files_path;

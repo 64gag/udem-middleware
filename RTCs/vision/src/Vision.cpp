@@ -42,6 +42,7 @@ static const char* vision_spec[] =
     "language",          "C++",
     "lang_type",         "compile",
 
+    "conf.default.int_camera", "99",
     "conf.default.int_img_width", "320",
     "conf.default.int_img_height", "240",
     "conf.default.str_files_path", "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/",
@@ -90,6 +91,7 @@ RTC::ReturnCode_t Vision::onInitialize()
   addOutPort("Result", m_p_resultOut);
   addOutPort("Status", m_p_statusOut);
 
+  bindParameter("int_camera", m_int_camera, "99");
   bindParameter("int_img_width", m_int_img_width, "320");
   bindParameter("int_img_height", m_int_img_height, "240");
   bindParameter("str_files_path", m_str_files_path, "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/");
@@ -192,8 +194,16 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 		}
 	}
 
-	getImageRaw(m_str_rosbridge_host.c_str(), m_int_rosbridge_port, m_str_img_rostopic.c_str());
-	Mat frame(m_int_img_height, m_int_img_width, CV_8UC3, cam_data);
+	Mat *frame=NULL;
+	VideoCapture *cap=NULL;
+	if(m_int_camera == 99){
+		getImageRaw(m_str_rosbridge_host.c_str(), m_int_rosbridge_port, m_str_img_rostopic.c_str());
+		frame = new Mat(m_int_img_height, m_int_img_width, CV_8UC3, cam_data);
+	}else{
+		frame = new Mat();
+	        cap = new VideoCapture(m_int_camera);
+	        (*cap) >> (*frame);
+	}
 
 	std::vector<vector<DMatch > > *t_matches = new std::vector<vector<DMatch > >[target_count];
 	std::vector<DMatch > *t_good_matches = new std::vector<DMatch >[target_count];
@@ -208,7 +218,7 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	Mat H;
 	Mat image;
 
-	cvtColor(frame, image, CV_RGB2GRAY);
+	cvtColor(*frame, image, CV_RGB2GRAY);
 
 	detector->detect( image, kp_image );
 	extractor->compute( image, kp_image, des_image );
@@ -287,6 +297,8 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	delete[] large;
 	delete[] width;
 	delete[] area;
+	delete frame;
+	delete cap;
 	coil::usleep(m_int_exec_delay);
   return RTC::RTC_OK;
 }
