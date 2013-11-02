@@ -1,12 +1,4 @@
-// -*- C++ -*-
-/*!
- * @file  Master.cpp
- * @brief Mind and commander
- * @date $Date$
- *
- * $Id$
- */
-
+#include <json/json.h>
 #include "Master.h"
 
 // Module specification
@@ -25,6 +17,10 @@ static const char* master_spec[] =
     "language",          "C++",
     "lang_type",         "compile",
     "conf.default.int_exec_delay", "50000",
+    "conf.default.int_fire_kinematics", "1",
+    "conf.default.int_fire_hardware", "1",
+    "conf.default.str_hardware", "0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5",
+    "conf.default.str_kinematics", "{ \"target_coords\" : [0.1, 0.4, 0.1] }",
     ""
   };
 // </rtc-template>
@@ -84,6 +80,10 @@ RTC::ReturnCode_t Master::onInitialize()
 
   // <rtc-template block="bind_config">
   bindParameter("int_exec_delay", m_int_exec_delay, "50000");
+  bindParameter("int_fire_hardware", m_int_fire_hardware, "1");
+  bindParameter("int_fire_kinematics", m_int_fire_kinematics, "1");
+  bindParameter("str_kinematics", m_str_kinematics, "{ \"target_coords\" : [0.1, 0.4, 0.1] }");
+  bindParameter("str_hardware", m_str_hardware, "0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5");
   // </rtc-template>
   
   return RTC::RTC_OK;
@@ -95,23 +95,17 @@ RTC::ReturnCode_t Master::onFinalize()
   return RTC::RTC_OK;
 }
 
-/*
-RTC::ReturnCode_t Master::onStartup(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Master::onShutdown(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-
 RTC::ReturnCode_t Master::onActivated(RTC::UniqueId ec_id)
 {
+
+/*
+	Json::Value toKinematics, array;
+	array.append(0.2f); 	array.append(0.2f); 	array.append(0.2f);
+	toKinematics["target_coords"] = array;
+	m_p_target_kinematics.data = toKinematics.toStyledString().c_str();
+	m_p_target_kinematicsOut.write();
+*/
+
   return RTC::RTC_OK;
 }
 
@@ -142,48 +136,23 @@ RTC::ReturnCode_t Master::onExecute(RTC::UniqueId ec_id)
 		m_p_result_kinematicsIn.read();
 		std::cout << "Received kinematicsIn: " << std::endl << m_p_result_kinematics.data << std::endl;
 	}
+	if(m_int_fire_hardware){
+		m_int_fire_hardware = 0;
+		m_p_state_hardware.data = m_str_hardware.c_str();
+		m_p_state_hardwareOut.write();
+	}
+
+	if(m_int_fire_kinematics){
+		m_int_fire_kinematics = 0;
+		m_p_target_kinematics.data = m_str_kinematics.c_str();
+		m_p_target_kinematicsOut.write();
+		std::cout << m_str_kinematics << std::endl;
+	}
 
   coil::usleep(m_int_exec_delay);
 
   return RTC::RTC_OK;
 }
-
-/*
-RTC::ReturnCode_t Master::onAborting(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Master::onError(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Master::onReset(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Master::onStateUpdate(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-/*
-RTC::ReturnCode_t Master::onRateChanged(RTC::UniqueId ec_id)
-{
-  return RTC::RTC_OK;
-}
-*/
-
-
 
 extern "C"
 {

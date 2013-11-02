@@ -224,6 +224,10 @@ class Master
   // Configuration variable declaration
   // <rtc-template block="config_declare">
   int m_int_exec_delay;
+  int m_int_fire_kinematics;
+  int m_int_fire_hardware;
+  std::string m_str_kinematics;
+  std::string m_str_hardware;
   // </rtc-template>
 
   // DataInPort declaration
