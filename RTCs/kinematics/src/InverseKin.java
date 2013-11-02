@@ -1,5 +1,7 @@
 
 
+import static java.lang.System.out;
+
 import java.io.IOException;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -23,7 +25,7 @@ public class InverseKin {
 
 	
 	public static double[] InverseKinematicSolver(double[] t0, String conf_json){
-		
+    	out.println(conf_json);
 		ConfigData conf = new ConfigData();
 		Gson conf_gson = new Gson();
 		conf = conf_gson.fromJson(conf_json, ConfigData.class);

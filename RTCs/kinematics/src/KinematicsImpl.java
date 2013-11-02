@@ -16,7 +16,7 @@ import jp.go.aist.rtm.RTC.port.OutPort;
 import jp.go.aist.rtm.RTC.util.DataRef;
 import jp.go.aist.rtm.RTC.util.StringHolder;
 import RTC.ReturnCode_t;
-
+import static java.lang.System.out;
 import com.google.gson.Gson;
 
 public class KinematicsImpl extends DataFlowComponentBase {
@@ -43,7 +43,7 @@ public class KinematicsImpl extends DataFlowComponentBase {
         addOutPort("Status", m_StatusOut);
         addOutPort("Result", m_ResultOut);
 
-        bindParameter("robot_config", m_robot_config, "{\"dof\" : 7, \"matrix_config\" : [[[0.0,0.0,0.0],[1.0,0.0,0.0],[0.0,0.0,1.0]],[[0.0,0.4,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]],[[0.0,0.4,0.3],[1.0,0.0,0.0],[0.0,-1.0,0.0]],[[0.0,0.4,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[1.0,0.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]]], \"type_config\" : [\"R\",\"R\",\"R\",\"R\",\"R\",\"R\",\"R\"] }");
+        bindParameter("robot_config", m_robot_config, "{ \"dof\" : 6, \"matrix_config\" : [[[0.0, 0.0, 0.0],[1.0, 0.0, 0.0],[0.0, 0.0, 1.0]], [[0.0, 0.4, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]], [[0.0,0.4,0.3],[1.0,0.0,0.0],[0.0,-1.0,0.0]], [[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]], [[0.0,-0.1,0.3],[1.0,0.0,0.0],[0.0,0.0,1.0]], [[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]]], \"type_config\" : [\"R\",\"R\",\"R\",\"R\",\"R\",\"R\"] }");
         return super.onInitialize();
     }
 
@@ -71,14 +71,20 @@ public class KinematicsImpl extends DataFlowComponentBase {
     		Gson in_gson = new Gson();
     		InputData in = new InputData();
     		String in_json = m_p_target.v.data;
+        	out.println("Received new data:");
+    		out.println(in_json);
     		in = in_gson.fromJson(in_json, InputData.class);
     		double[] target = in.target_coords;
+    		StdArrayIO.print(target);
     		double[] jointValues = InverseKin.InverseKinematicSolver(target, m_robot_config.toString());
     		
-    		OutputData out = new OutputData();
-    		out.joints = jointValues;
+
+    		OutputData outd = new OutputData();
+    		outd.joints = jointValues;
     		Gson out_gson = new Gson();
-    		String out_json = new String(out_gson.toJson(out));
+    		String out_json = new String(out_gson.toJson(outd));
+    		out.println("Output joints:");
+    		out.println(out_json);
     		m_p_result_val.data = new String(out_json);
 			m_p_result_val.tm = new RTC.Time(0,0);
 		  	m_ResultOut.write();
