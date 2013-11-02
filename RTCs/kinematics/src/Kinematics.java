@@ -5,14 +5,8 @@ import jp.go.aist.rtm.RTC.RtcNewFunc;
 import jp.go.aist.rtm.RTC.RegisterModuleFunc;
 import jp.go.aist.rtm.RTC.util.Properties;
 
-/*!
- * @class Kinematics
- * @brief Kinematics RTC-
- */
 public class Kinematics implements RtcNewFunc, RtcDeleteFunc, RegisterModuleFunc {
 
-//  Module specification
-//  <rtc-template block="module_spec">
     public static String component_conf[] = {
     	    "implementation_id", "Kinematics",
     	    "type_name",         "Kinematics",
@@ -24,13 +18,10 @@ public class Kinematics implements RtcNewFunc, RtcDeleteFunc, RegisterModuleFunc
     	    "max_instance",      "1",
     	    "language",          "Java",
     	    "lang_type",         "compile",
-            "conf.default.robot_config", "{\"type_config\" : \"RRRRR\"," +
-            		"\"matrix_config\" : [[[1,2,3], [4,5,6], [7,8,9]],[[1,2,3], [4,5,6], [7,8,9]]], "+
-            		"\"dof\" : 7 }",
+            "conf.default.robot_config", "{\"dof\" : 7, \"matrix_config\" : [[[0.0,0.0,0.0],[1.0,0.0,0.0],[0.0,0.0,1.0]],[[0.0,0.4,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]],[[0.0,0.4,0.3],[1.0,0.0,0.0],[0.0,-1.0,0.0]],[[0.0,0.4,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[1.0,0.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]]], \"type_config\" : [\"R\",\"R\",\"R\",\"R\",\"R\",\"R\",\"R\"] }",
             "conf.__widget__.robot_config", "text",
     	    ""
             };
-//  </rtc-template>
 
     public RTObject_impl createRtc(Manager mgr) {
         return new KinematicsImpl(mgr);

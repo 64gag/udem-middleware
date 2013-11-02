@@ -10,6 +10,8 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.FastMath;
 
+import com.google.gson.Gson;
+
 
 
 public class InverseKin {
@@ -20,17 +22,15 @@ public class InverseKin {
 	 */
 
 	
-	public static double[] InverseKinematicSolver(double[] t0) throws IOException{
+	public static double[] InverseKinematicSolver(double[] t0, String conf_json){
 		
-		InputData id = new InputData("{\"DOF\":7,\"MATRIX_CONFIG\":[[[0.0,0.0,0.0],[1.0,0.0,0.0],[0.0,0.0,1.0]],[[0.0,0.4,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]],[[0.0,0.4,0.3],[1.0,0.0,0.0],[0.0,-1.0,0.0]],[[0.0,0.4,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[1.0,0.0,0.0],[0.0,0.0,1.0]],[[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]]],\"TYPE_CONFIG\":[\"R\",\"R\",\"R\",\"R\",\"R\",\"R\",\"R\"]}");
-		InputData inputs = id.DataJson;
+		ConfigData conf = new ConfigData();
+		Gson conf_gson = new Gson();
+		conf = conf_gson.fromJson(conf_json, ConfigData.class);
 		
-		int DOF = inputs.DOF;	//Get amount of Degrees of Freedom in the system
-		
-		double[][][] matrixConfig = inputs.MATRIX_CONFIG; //Get system geometric configuration
-
-		final String[] typeConfig = inputs.TYPE_CONFIG; //Get system joint type configuration
-		
+		int DOF = conf.dof;	//Get amount of Degrees of Freedom in the system
+		double[][][] matrixConfig = conf.matrix_config; //Get system geometric configuration
+		final String[] typeConfig = conf.type_config; //Get system joint type configuration
 		final double[][] linkParams = ForwardKin.linkParamsChart(DOF, typeConfig, matrixConfig);
 		//StdArrayIO.print(linkParams);
 		
@@ -83,7 +83,6 @@ public class InverseKin {
 			q0 = Q0.toArray();
 			
 			 if(error<e){
-				 StdOut.println("Joint values: ");
 				 	results=Q1.toArray();
 				 	//StdArrayIO.print(results); 
 			 }
