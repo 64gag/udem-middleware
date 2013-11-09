@@ -1,6 +1,8 @@
 .metadata/
+*.log
+*~
 RTCs/hardware/build/
-RTCs/kinematics/build/
+RTCs/kinematics/bin/
 RTCs/master/build/
 RTCs/simulation/build/
 RTCs/vision/build/
