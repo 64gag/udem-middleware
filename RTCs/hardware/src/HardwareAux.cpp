@@ -37,7 +37,7 @@ std::vector<float> extractFloats(std::string s, std::string f, char token)
 
 	for(unsigned int i=0; i+1 < exploded.size(); i++){
 		s = s.substr(exploded[i].length());
-		std::size_t notnum = s.find_first_not_of("0123456789.");
+		std::size_t notnum = s.find_first_not_of("0123456789.-");
 		ret.push_back(::atof(s.substr(0, notnum).c_str()));
 		s = s.substr(notnum);
 	}
