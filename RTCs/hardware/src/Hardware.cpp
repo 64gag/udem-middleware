@@ -5,6 +5,8 @@
 #include "HardwareController.h"
 #include "HardwareAux.h"
 
+#define DEBUG
+
 int waiting_feedback;
 
 static const char* hardware_spec[] =
@@ -21,9 +23,9 @@ static const char* hardware_spec[] =
 	"language",          "C++",
 	"lang_type",         "compile",
 	"conf.default.int_exec_delay", "100000",
-	"conf.default.int_joints", "8",
-	"conf.default.str_json_data_format", "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][ANGLE.7:%][GRIPPER:%])",
-	"conf.default.str_slopes", "0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5",
+	"conf.default.int_joints", "9",
+	"conf.default.str_json_data_format", "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][GRIPPER:%][MOTOR_L:%][MOTOR_R:%])",
+	"conf.default.str_slopes", "0.05,0.05,0.05,0.05,0.05,0.05,0.05,1000,1000",
 	""
 };
 
@@ -52,9 +54,9 @@ RTC::ReturnCode_t Hardware::onInitialize()
 	// Set OutPort buffer
 	addOutPort("Status", m_p_statusOut);
 	addOutPort("Data", m_p_dataOut);
-	bindParameter("int_joints", m_int_joints, "8");
-	bindParameter("str_json_data_format", m_str_json_data_format, "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][ANGLE.7:%][GRIPPER:%])");
-	bindParameter("str_slopes", m_str_slopes, "0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5");
+	bindParameter("int_joints", m_int_joints, "9");
+	bindParameter("str_json_data_format", m_str_json_data_format, "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][GRIPPER:%][MOTOR_L:%][MOTOR_R:%])");
+	bindParameter("str_slopes", m_str_slopes, "0.05,0.05,0.05,0.05,0.05,0.05,0.05,1000,1000");
 
 	return RTC::RTC_OK;
 }
@@ -73,7 +75,7 @@ RTC::ReturnCode_t Hardware::onActivated(RTC::UniqueId ec_id)
 {
 	/* Load configurations to a new HardwareController object */
 	HW = new HardwareController(m_int_joints, string2floats(m_str_slopes));
-	HW->setCurrent(string2floats("0,0,0,0,0,0,0,0"));
+	HW->setCurrent(string2floats("0,0,0,0,0,0,0,0,0"));
 	return RTC::RTC_OK;
 }
 
@@ -89,22 +91,23 @@ RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 	/* Listen to the master */
 	if (m_p_positionIn.isNew()) {
 		m_p_positionIn.read();
-		std::ostringstream out;
-		out << m_p_position.data; /* Is there a better way to do this? */
-		HW->setTarget(string2floats(out.str()));
+		std::string port_str = (char *)m_p_position.data;
+#ifdef DEBUG
+		std::cout << port_str << std::endl;
+#endif
+		HW->setTarget(string2floats(port_str));
 	}
 
 	/* Get the data the real/simulated robot sends back */
 	if (m_p_feedbackIn.isNew()) {
 		m_p_feedbackIn.read();
-		std::ostringstream out;
-		out << m_p_feedback.data; /* Is there a better way to do this? */
+		std::string port_str = (char*)m_p_feedback.data;
 
 		/* Parse received data */
 		{
 			Json::Value root;
 			Json::Reader reader;
-			bool parsedSuccess = reader.parse(out.str(), root, false);
+			bool parsedSuccess = reader.parse(port_str, root, false);
 			if(!parsedSuccess) {
 				//panic out
 			}
@@ -118,8 +121,14 @@ RTC::ReturnCode_t Hardware::onExecute(RTC::UniqueId ec_id)
 
 	unsigned int unready_joints = HW->doUpdate();
 	if(unready_joints) {
+#ifdef DEBUG
+		std::cout << "Unready joints" << std::endl;
+#endif
 		m_p_status.data = unready_joints; /* Report the master block we are not done */
 		m_p_statusOut.write();
+#ifdef DEBUG
+		std::cout << HW->getJSON(m_str_json_data_format).c_str() << std::endl;
+#endif
 		m_p_data.data = HW->getJSON(m_str_json_data_format).c_str();
 		m_p_dataOut.write();
 		waiting_feedback = 1;

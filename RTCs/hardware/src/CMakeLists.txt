@@ -1,5 +1,5 @@
 set(comp_srcs Hardware.cpp )
-set(standalone_srcs HardwareComp.cpp HardwareController.cpp HardwareAux.cpp)
+set(standalone_srcs HardwareComp.cpp HardwareController.cpp FloatsAux.cpp)
 
 if (DEFINED OPENRTM_INCLUDE_DIRS)
   string(REGEX REPLACE "-I" ";"

@@ -43,7 +43,14 @@ public class KinematicsImpl extends DataFlowComponentBase {
         addOutPort("Status", m_StatusOut);
         addOutPort("Result", m_ResultOut);
 
-        bindParameter("robot_config", m_robot_config, "{ \"dof\" : 6, \"matrix_config\" : [[[0.0, 0.0, 0.0],[1.0, 0.0, 0.0],[0.0, 0.0, 1.0]], [[0.0, 0.4, 0.0],[0.0, 1.0, 0.0],[0.0, 0.0, 1.0]], [[0.0,0.4,0.3],[1.0,0.0,0.0],[0.0,-1.0,0.0]], [[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]], [[0.0,-0.1,0.3],[1.0,0.0,0.0],[0.0,0.0,1.0]], [[0.0,-0.1,0.3],[0.0,-1.0,0.0],[0.0,0.0,1.0]]], \"type_config\" : [\"R\",\"R\",\"R\",\"R\",\"R\",\"R\"] }");
+        bindParameter("robot_config", m_robot_config, "{\"dof\":6," +
+				"\"matrix_config\":[[[0.000,0.000,0.000],[1.000,0.000,0.000],[0.000,0.000,1.000]]," +
+				"					[[-0.030,0.475,0.000],[0.000,1.000,0.000],[0.000,0.000,1.000]]," +
+				"					[[0.030,0.475,0.400],[1.000,0.000,0.000],[0.000,0.000,1.000]]," +
+				"					[[-0.005,-0.775,0.400],[0.000,-1.000,0.000],[0.000,0.000,1.000]]," +
+				"					[[-0.005,-0.775,0.400],[1.000,0.000,0.000],[0.000,0.000,1.000]]," +
+				"					[[-0.005,-0.775,0.400],[0.000,-1.000,0.000],[0.000,0.000,1.000]]]," +
+				"\"type_config\":[\"R\",\"R\",\"R\",\"R\",\"R\",\"R\"]}");
         return super.onInitialize();
     }
 
@@ -71,10 +78,11 @@ public class KinematicsImpl extends DataFlowComponentBase {
     		Gson in_gson = new Gson();
     		InputData in = new InputData();
     		String in_json = m_p_target.v.data;
+//    		String in_json = "{ \"tip_config\" : [[0, 90, -180],[1, 1, 1]] }";
         	out.println("Received new data:");
     		out.println(in_json);
     		in = in_gson.fromJson(in_json, InputData.class);
-    		double[] target = in.target_coords;
+    		double[] target = ForwardKin.tipCoords(in.tip_config);
     		StdArrayIO.print(target);
     		double[] jointValues = InverseKin.InverseKinematicSolver(target, m_robot_config.toString());
     		

@@ -48,6 +48,9 @@ unsigned int HardwareController::doUpdate(void)
 	
 	if(!haveCurrent() || !haveTarget())
 		return ret;
+#ifdef DEBUG
+std::ostringstream out;	
+#endif
 	
 	for(int i=0;i<joints_count;i++) {
 		if (angles_current[i] != angles_target[i]) {
@@ -55,8 +58,15 @@ unsigned int HardwareController::doUpdate(void)
 			float smaller_current = (((float)(angles_current[i]<angles_target[i]))-0.5f)*2.0f;	//Ugly way to get -1 or 1
 			float diff = (angles_target[i]-angles_current[i])*smaller_current;
 			angles_current[i] += (diff>slopes[i] ? slopes[i]: diff)*smaller_current;
+#ifdef DEBUG
+			out << i << ": " << angles_current[i] << std::endl;
+#endif
 		}
 	}
+#ifdef DEBUG
+	std::cout << out.str() << std::endl;			
+#endif
+
 
 	return ret;
 }

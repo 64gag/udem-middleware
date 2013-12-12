@@ -1,3 +1,6 @@
+#ifndef HARDWARECONTROLLER
+#define HARDWARECONTROLLER
+
 enum {
         HW_CURRENT=0,
         HW_TARGET,
@@ -29,3 +32,5 @@ class HardwareController {
 	unsigned int haveCurrent();
 	unsigned int haveTarget();
 };
+
+#endif

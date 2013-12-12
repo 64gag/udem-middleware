@@ -11,6 +11,8 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <json/json.h>
 
+#define DEBUG
+
 using namespace cv;
 
 std::vector<std::string> images;
@@ -27,7 +29,6 @@ FlannBasedMatcher * matcher = NULL;
 int targets_encoded=0xffff;
 unsigned char *cam_data=NULL;
 
-// Module specification
 static const char* vision_spec[] =
   {
     "implementation_id", "Vision",
@@ -45,9 +46,9 @@ static const char* vision_spec[] =
     "conf.default.int_camera", "99",
     "conf.default.int_img_width", "320",
     "conf.default.int_img_height", "240",
-    "conf.default.str_files_path", "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/",
+    "conf.default.str_files_path", "/home/paguiar/Dropbox/UDEM/Middleware/git/RTCs/vision/src/",
     "conf.default.str_images", "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg",
-    "conf.default.str_img_rostopic", "/huskycamera/image_raw",
+    "conf.default.str_img_rostopic", "/vrep/visionSensorData",
     "conf.default.str_rosbridge_host", "127.0.0.1",
     "conf.default.int_rosbridge_port", "9090",
     "conf.default.int_area_min", "15000",
@@ -94,9 +95,9 @@ RTC::ReturnCode_t Vision::onInitialize()
   bindParameter("int_camera", m_int_camera, "99");
   bindParameter("int_img_width", m_int_img_width, "320");
   bindParameter("int_img_height", m_int_img_height, "240");
-  bindParameter("str_files_path", m_str_files_path, "/home/paguiar/Dropbox/UDEM/PPD - Middleware/git/RTCs/vision/src/");
+  bindParameter("str_files_path", m_str_files_path, "/home/paguiar/Dropbox/UDEM/Middleware/git/RTCs/vision/src/");
   bindParameter("str_images", m_str_images, "fast.jpg,slow.jpg,left.jpg,right.jpg,stairs.jpg,elevator.jpg,stop.jpg");
-  bindParameter("str_img_rostopic", m_str_img_rostopic, "/huskycamera/image_raw");
+  bindParameter("str_img_rostopic", m_str_img_rostopic, "/vrep/visionSensorData");
   bindParameter("str_rosbridge_host", m_str_rosbridge_host, "127.0.0.1");
   bindParameter("int_rosbridge_port", m_int_rosbridge_port, "9090");
   bindParameter("int_area_min", m_int_area_min, "15000");
@@ -174,14 +175,13 @@ RTC::ReturnCode_t Vision::onExecute(RTC::UniqueId ec_id)
 	if (m_p_optionIn.isNew())
 	{
 		m_p_optionIn.read();
-		std::ostringstream opts;
-		opts << m_p_option.data; /* Is there a better way to do this? */
+		std::string port_str = (char*)m_p_option.data;
 
 		/* Parse received data */
 		{
 			Json::Value root;
 			Json::Reader reader;
-			bool parsedSuccess = reader.parse(opts.str(), root, false);
+			bool parsedSuccess = reader.parse(port_str, root, false);
 			if(!parsedSuccess)
 			{
 				//panic out

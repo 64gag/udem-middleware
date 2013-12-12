@@ -1,5 +1,5 @@
 public class InputData {
        
-    public double[] target_coords;
+    public double[][] tip_config;
           
 }

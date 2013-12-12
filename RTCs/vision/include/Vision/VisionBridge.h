@@ -1,3 +1,6 @@
+#ifndef VISIONBRIDGE
+#define VISIONBRIDGE
+
 extern "C" {
 
 	void build_decoding_table();
@@ -6,3 +9,5 @@ extern "C" {
 	int getImageRaw(const char * host, int port, const char * topic);
 
 }
+
+#endif

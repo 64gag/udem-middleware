@@ -1,5 +1,5 @@
 set(comp_srcs Simulation.cpp )
-set(standalone_srcs SimulationComp.cpp SimulationBridge.c SimulationAux.cpp)
+set(standalone_srcs SimulationComp.cpp SimulationBridge.c FloatsAux.cpp)
 
 if (DEFINED OPENRTM_INCLUDE_DIRS)
   string(REGEX REPLACE "-I" ";"

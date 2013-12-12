@@ -1,13 +1,8 @@
 #include <json/json.h>
 #include "Simulation.h"
 #include "SimulationBridge.h"
-#include "SimulationAux.h"
+#include "FloatsAux.h"
 
-Json::Value rosbridge_msg, rosbridge_args;
-Json::Value arg_setmodes, arg_values, arg_handles;
-
-
-// Module specification
 static const char* simulation_spec[] =
 {
 	"implementation_id", "Simulation",
@@ -21,14 +16,14 @@ static const char* simulation_spec[] =
 	"max_instance",      "1",
 	"language",          "C++",
 	"lang_type",         "compile",
+	"conf.default.int_joints", "9",
 	""
 };
 
 Simulation::Simulation(RTC::Manager* manager)
   : RTC::DataFlowComponentBase(manager),
     m_p_dataIn("Data", m_p_data),
-    m_p_feedbackOut("Feedback", m_p_feedback),
-    m_p_cameraOut("Camera", m_p_camera)
+    m_p_feedbackOut("Feedback", m_p_feedback)
 {
 }
 
@@ -38,34 +33,24 @@ Simulation::~Simulation()
 
 RTC::ReturnCode_t Simulation::onInitialize()
 {
-  // Set InPort buffers
   addInPort("Data", m_p_dataIn);
-
-  // Set OutPort buffer
   addOutPort("Feedback", m_p_feedbackOut);
-  addOutPort("Camera", m_p_cameraOut);
+  bindParameter("int_joints", m_int_joints, "9");
 
   return RTC::RTC_OK;
 }
 
 RTC::ReturnCode_t Simulation::onActivated(RTC::UniqueId ec_id)
 {
-	rosbridge_msg["op"] = "call_service";
-	rosbridge_msg["service"] = "/vrep/simRosSetJointState";
-
-	arg_handles.resize(1);
-	arg_values.resize(1);
-	arg_setmodes.resize(1);
-
-
+	std::cout << "SimulationComp activated" << std::endl;
 	char host[] = "127.0.0.1"; 
-	ws_vrep_open(host, 9090);
+	ws_rosbridge_open(host, 9090);
 	return RTC::RTC_OK;
 }
 
 RTC::ReturnCode_t Simulation::onDeactivated(RTC::UniqueId ec_id)
 {
-	ws_vrep_close();
+	ws_rosbridge_close();
 	return RTC::RTC_OK;
 }
 
@@ -73,33 +58,48 @@ RTC::ReturnCode_t Simulation::onExecute(RTC::UniqueId ec_id)
 {
 	if (m_p_dataIn.isNew())
 	{
+		std::cout << "DataIn New" << std::endl;
+		std::vector<float> extracted;
 		m_p_dataIn.read();
 		{
-			std::ostringstream out;
-			out << m_p_data.data;
-			m_p_feedback.data = out.str().c_str();
+			std::string port_str = (char*)m_p_data.data;
+			m_p_feedback.data = port_str.c_str();
 			m_p_feedbackOut.write();
 
 			Json::Value root;
 			Json::Reader reader;
-			bool parsedSuccess = reader.parse(out.str(), root, false);
+			bool parsedSuccess = reader.parse(port_str, root, false);
 			if(!parsedSuccess) {
 				//panic out
 			}
-			std::vector<float> extracted = extractFloats(root["data"].asString(), "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][ANGLE.7:%][GRIPPER:%])", '%');
-			arg_values[0u] = extracted[0];
+			extracted = extractFloats(root["data"].asString(), "<WRIST>([ANGLE.1:%][ANGLE.2:%][ANGLE.3:%][ANGLE.4:%][ANGLE.5:%][ANGLE.6:%][GRIPPER:%][MOTOR_L:%][MOTOR_R:%])", '%');
+
+			int joint_handles[6] = {58, 60, 62, 64, 66, 68};
+			int joint_setModes[6] = {0, 0, 0, 0, 0, 0};
+			float joint_values[6];
+			for(int i = 0; i < 6; i++)
+				joint_values[i] = extracted[i];
+
+			simRosSetJointState(6, joint_handles, joint_setModes, joint_values);
 		}
-		arg_handles[0u] = 40;
-		arg_setmodes[0u] = 0;
+#ifdef DEBUG
+//		std::cout << rosbridge_msg.toStyledString() << std::endl;
+#endif
 
-		rosbridge_args["handles"] = arg_handles;
-		rosbridge_args["setModes"] = arg_setmodes;
-		rosbridge_args["values"] = arg_values;
+		{
+			int joint_handles[2] = {50, 52};
+			int joint_setModes[2] = {2, 2};
+			float joint_values[2] = {extracted[7], extracted[8]};
+			simRosSetJointState(2, joint_handles, joint_setModes, joint_values);
+		}
+#ifdef DEBUG
+//		std::cout << rosbridge_msg.toStyledString() << std::endl;
+#endif
 
-		rosbridge_msg["args"] = rosbridge_args;
+#ifdef DEBUG
+//		std::cout << rosbridge_msg.toStyledString() << std::endl;
+#endif
 
-		std::cout << rosbridge_msg.toStyledString() << std::endl;
-		ws_vrep_service(rosbridge_msg.toStyledString().c_str());
 	}
 
 	coil::usleep(1000);

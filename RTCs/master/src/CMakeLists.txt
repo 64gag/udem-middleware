@@ -1,5 +1,5 @@
 set(comp_srcs Master.cpp )
-set(standalone_srcs MasterComp.cpp)
+set(standalone_srcs MasterComp.cpp FloatsAux.cpp)
 
 if (DEFINED OPENRTM_INCLUDE_DIRS)
   string(REGEX REPLACE "-I" ";"

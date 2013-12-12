@@ -1,10 +1,4 @@
-
-
-
-
 import org.apache.commons.math3.analysis.differentiation.*;
-
-
 import org.apache.commons.math3.util.*;
 
 public class ForwardKin {
@@ -271,4 +265,46 @@ public class ForwardKin {
 		
 		return funciones;
 	}
+	
+	public static double[] deg2rad(double[] degrees){
+		
+		double[] radians = new double[degrees.length];
+		for(int i = 0; i< degrees.length; i++){
+			
+			radians[i] = FastMath.toRadians(degrees[i]);
+			
+		}
+		
+		return radians;
+	}
+	
+public static double[][] rotEuler(double[] Angles) {
+		
+		double[][] RotEuler = new double[3][3];
+		
+		RotEuler[0][0] = FastMath.cos(Angles[0])*FastMath.cos(Angles[1])*FastMath.cos(Angles[2]) - FastMath.sin(Angles[0])*FastMath.sin(Angles[2]);
+		RotEuler[0][1] = -FastMath.cos(Angles[0])*FastMath.cos(Angles[1])*FastMath.sin(Angles[2]) - FastMath.sin(Angles[0])*FastMath.cos(Angles[2]);
+		RotEuler[0][2] = FastMath.cos(Angles[0])*FastMath.sin(Angles[1]);
+		
+		RotEuler[1][0] = FastMath.sin(Angles[0])*FastMath.cos(Angles[1])*FastMath.cos(Angles[2]) + FastMath.cos(Angles[0])*FastMath.sin(Angles[2]);
+		RotEuler[1][1] = -FastMath.sin(Angles[0])*FastMath.cos(Angles[1])*FastMath.sin(Angles[2]) + FastMath.cos(Angles[0])*FastMath.cos(Angles[2]);
+		RotEuler[1][2] = FastMath.sin(Angles[0])*FastMath.sin(Angles[1]);
+		
+		RotEuler[2][0] = -FastMath.sin(Angles[1])*FastMath.cos(Angles[2]);
+		RotEuler[2][1] = FastMath.sin(Angles[1])*FastMath.sin(Angles[2]);
+		RotEuler[2][2] = FastMath.cos(Angles[1]);
+		
+		return RotEuler;
+	}
+
+public static double[] tipCoords(double[][] TipConfig){
+		
+		double[] tipCoords = new double[2];
+		
+		tipCoords = MatrixOps.multiply(TipConfig[1], rotEuler(deg2rad(TipConfig[0])));
+		
+		
+		return tipCoords;
+	}
+		
 }
