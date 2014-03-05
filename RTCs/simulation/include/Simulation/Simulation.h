@@ -26,6 +26,7 @@ class Simulation
    virtual RTC::ReturnCode_t onExecute(RTC::UniqueId ec_id);
 
  protected:
+  int m_int_joints;
   RTC::TimedString m_p_data;
   InPort<RTC::TimedString> m_p_dataIn;
   RTC::TimedString m_p_feedback;
